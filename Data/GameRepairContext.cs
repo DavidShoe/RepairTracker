@@ -26,7 +26,7 @@ namespace RepairTracker.Data
         public DbSet<Game> Games { get; set; }
         public DbSet<Repair> Repairs { get; set; }
         public DbSet<RepairPart> RepairParts { get; set; }
-
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +54,11 @@ namespace RepairTracker.Data
                 .HasMany(p => p.RepairParts)
                 .WithOne(rp => rp.Part)
                 .HasForeignKey(rp => rp.PartID);
+
+            modelBuilder.Entity<Category>()
+                .HasMany(c => c.Parts)
+                .WithOne(p => p.Category)
+                .HasForeignKey(p => p.CategoryID);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RepairTracker.Data;
 
@@ -11,9 +12,11 @@ using RepairTracker.Data;
 namespace RepairTracker.Migrations
 {
     [DbContext(typeof(GameRepairContext))]
-    partial class GameRepairContextModelSnapshot : ModelSnapshot
+    [Migration("20240826060255_UpdatePart")]
+    partial class UpdatePart
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,23 +24,6 @@ namespace RepairTracker.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("GameRepairApp.Models.Category", b =>
-                {
-                    b.Property<int>("CategoryID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryID"));
-
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("CategoryID");
-
-                    b.ToTable("Categories");
-                });
 
             modelBuilder.Entity("GameRepairApp.Models.Game", b =>
                 {
@@ -87,9 +73,6 @@ namespace RepairTracker.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PartID"));
 
-                    b.Property<int>("CategoryID")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Cost")
                         .HasColumnType("decimal(18,2)");
 
@@ -103,8 +86,6 @@ namespace RepairTracker.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("PartID");
-
-                    b.HasIndex("CategoryID");
 
                     b.ToTable("Parts");
                 });
@@ -194,17 +175,6 @@ namespace RepairTracker.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("GameRepairApp.Models.Part", b =>
-                {
-                    b.HasOne("GameRepairApp.Models.Category", "Category")
-                        .WithMany("Parts")
-                        .HasForeignKey("CategoryID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("GameRepairApp.Models.Repair", b =>
                 {
                     b.HasOne("GameRepairApp.Models.Game", "Game")
@@ -241,11 +211,6 @@ namespace RepairTracker.Migrations
                     b.Navigation("Part");
 
                     b.Navigation("Repair");
-                });
-
-            modelBuilder.Entity("GameRepairApp.Models.Category", b =>
-                {
-                    b.Navigation("Parts");
                 });
 
             modelBuilder.Entity("GameRepairApp.Models.Game", b =>
