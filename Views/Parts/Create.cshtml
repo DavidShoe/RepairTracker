@@ -34,7 +34,13 @@
             </div>
             <div class="form-group">
                 <label asp-for="CategoryID" class="control-label"></label>
-                <select asp-for="CategoryID" class ="form-control" asp-items="ViewBag.CategoryID"></select>
+                <div class="input-group">
+                    <select asp-for="CategoryID" class="form-control" asp-items="ViewBag.Categories"></select>
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategoryModal">New Category</button>
+                    </div>
+                </div>
+                <span asp-validation-for="CategoryID" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -47,6 +53,74 @@
     <a asp-action="PartsIndex">Back to List</a>
 </div>
 
+
+<!-- Modal for adding a new category -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addCategoryForm">
+                    <div class="form-group">
+                        <label for="CategoryName" class="control-label">Category Name</label>
+                        <input type="text" class="form-control" id="CategoryName" name="CategoryName" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="saveCategoryButton">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+
+            $(document).on('submit', '#addCategoryModal form', function (event) {
+                console.log("SaveCategoryButton clicked");
+                var categoryName = $('#CategoryName').val();
+                if (categoryName) {
+                    $.ajax({
+                        url: '@Url.Action("CreateCategory", "Parts")',
+                        type: 'post',
+                        data: 
+                        { 
+                            CategoryName: categoryName
+                        },
+                        success: function (result) {
+                            console.log("AJAX success", result);
+                            if (result.success) {
+                                // Add the new category to the dropdown
+                                var newOption = new Option(result.category.CategoryName, result.category.CategoryID, true, true);
+                                $('select[name="CategoryID"]').append(newOption).trigger('change');
+
+                                // Close the modal
+                                $('#addCategoryModal').modal('hide');
+                            } else {
+                                alert('Error: ' + result.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error', error);
+                            alert('An error occurred: ' + error);
+                        }
+                    });
+                } else {
+                    alert('Category name is required.');
+                }
+            });
+
+        });
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
+

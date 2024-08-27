@@ -7,9 +7,21 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using GameRepairApp.Models;
 using RepairTracker.Data;
+using System.Diagnostics;
 
 namespace RepairTracker.Controllers
 {
+    public class AddCategoryViewItemModel
+    {
+        GameRepairContext Context;
+        public AddCategoryViewItemModel(GameRepairContext context)
+        {
+            Context = context;
+        }
+
+        public String? Category { get; set; }
+    }
+
     public class PartsController : Controller
     {
         private readonly GameRepairContext _context;
@@ -48,7 +60,7 @@ namespace RepairTracker.Controllers
         // GET: Parts/Create
         public IActionResult Create()
         {
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryID");
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
             return View();
         }
 
@@ -65,7 +77,7 @@ namespace RepairTracker.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(PartsIndex));
             }
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryID", part.CategoryID);
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", part.CategoryID);
             return View(part);
         }
 
@@ -82,7 +94,7 @@ namespace RepairTracker.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryID", part.CategoryID);
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
             return View(part);
         }
 
@@ -118,7 +130,7 @@ namespace RepairTracker.Controllers
                 }
                 return RedirectToAction(nameof(PartsIndex));
             }
-            ViewData["CategoryID"] = new SelectList(_context.Categories, "CategoryID", "CategoryID", part.CategoryID);
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
             return View(part);
         }
 
@@ -156,9 +168,31 @@ namespace RepairTracker.Controllers
             return RedirectToAction(nameof(PartsIndex));
         }
 
+        [HttpPost, ActionName("CreateCategory")]
+        public async Task<IActionResult> CreateCategory(string CategoryName)
+        {
+            Debug.WriteLine($"CreateCagetory -> CategoryName: {CategoryName}");
+            if (string.IsNullOrEmpty(CategoryName))
+            {
+                return Json(new { success = false, message = "Category name is required." });
+            }
+
+            var category = new Category { CategoryName = CategoryName };
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, category });
+        }
+
         private bool PartExists(int id)
         {
             return _context.Parts.Any(e => e.PartID == id);
+        }
+
+        public IActionResult AddCategoryPartialView()
+        {
+            var viewModel = new AddCategoryViewItemModel(_context);
+            return PartialView("_AddCagetoryPartialView", viewModel);
         }
     }
 }

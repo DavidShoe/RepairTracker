@@ -1,0 +1,95 @@
+﻿@model GameRepairApp.Models.Category
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.ComponentModel.DataAnnotations
+
+
+<!-- Modal for adding a new category -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addCategoryForm">
+                    <div class="form-group">
+                        <label for="CategoryName" class="control-label">Category Name</label>
+                        <input type="text" class="form-control" id="CategoryName" name="CategoryName" required />
+                    </div>
+                    <button type="button" class="btn btn-primary" id="saveCategoryButton">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            $('#saveCategoryButton').click(function () {
+                console.log("SaveCategoryButton clicked");
+                var categoryName = $('#CategoryName').val();
+                if (categoryName) {
+                    $.ajax({
+                        url: '@Url.Action("CreateCategory", "Parts")',
+                        type: 'POST',
+                        data: { CategoryName: categoryName },
+                        success: function (result) {
+                            console.log("AJAX success", result);
+                            if (result.success) {
+                                // Add the new category to the dropdown
+                                var newOption = new Option(result.category.CategoryName, result.category.CategoryID, true, true);
+                                $('select[name="CategoryID"]').append(newOption).trigger('change');
+
+                                // Close the modal
+                                $('#addCategoryModal').modal('hide');
+                            } else {
+                                alert('Error: ' + result.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error', error);
+                            alert('An error occurred: ' + error);
+                        }
+                    });
+                } else {
+                    alert('Category name is required.');
+                }
+            });
+        });
+    </script>
+}
+
+
+@* <div class="modal-header">
+    <h3 class="modal-title" id="newItemModalLabel">Create Category</h3>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-4">
+            <form id="createCategoryForm" method="post" action="@Url.Action("CreateCategory", "Parts")">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="CategoryName" class="control-label"></label>
+                    <input asp-for="CategoryName" class="form-control" />
+                    <span asp-validation-for="CategoryName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <button id="processButton" type="submit" onclick="submitForm();" class="btn btn-primary">Create Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ *@
