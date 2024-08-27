@@ -13,27 +13,32 @@
 
             <div class="form-group">
                 <label asp-for="GameId" class="control-label"></label>
-                <select asp-for="GameId" class ="form-control" asp-items="ViewBag.GameNames"></select>
-                <div class="input-group-append">
-                    <button type="button" id="AddGame" class="btn btn-secondary">Add Game</button>
+                <div class="d-flex align-items-center">
+                    <select asp-for="GameId" class="form-control" asp-items="ViewBag.GameNames"></select>
+                    <button type="button" id="AddGame" class="btn btn-secondary ml-2">Add Game</button>
                 </div>
-
             </div>
 
             <div class="form-group">
                 <label asp-for="OwnerId" class="control-label"></label>
-                <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerNames"></select>
+                <div class="d-flex align-items-center">
+                    <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerNames"></select>
+                    <button type="button" id="AddOwner" class="btn btn-secondary ml-2">Add Owner</button>
+                </div>
             </div>
 
             <div class="form-group">
                 <label asp-for="TechnicianId" class="control-label"></label>
                 <select asp-for="TechnicianId" class ="form-control" asp-items="ViewBag.TechnicianNames"></select>
             </div>
+
             <div class="form-group">
                 <label asp-for="ReceivedDate" class="control-label"></label>
-                <input asp-for="ReceivedDate" class="form-control" />
+                <input asp-for="ReceivedDate" class="form-control" type="date"/>
                 <span asp-validation-for="ReceivedDate" class="text-danger"></span>
             </div>
+
+
             <div class="form-group">
                 <label asp-for="CustomerStates" class="control-label"></label>
                 <input asp-for="CustomerStates" class="form-control" />
@@ -87,21 +92,48 @@
     </div>
 </div>
 
+<!-- Owner Modal -->
+<div class="modal" id="addOwnerModal" tabindex="-1" role="dialog" aria-labelledby="addOwnerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOwnerModalLabel">Add New Owner</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addOwnerForm">
+                    <div class="form-group">
+                        <label for="OwnerName">Owner Name</label>
+                        <input type="text" class="form-control" id="OwnerName" name="OwnerName" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Owner</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
         $(document).ready(function () {
-            var now = new Date();
-            var year = now.getFullYear();
-            var month = ('0' + (now.getMonth() + 1)).slice(-2); // Months are zero-based
-            var day = ('0' + now.getDate()).slice(-2);
-            var hours = ('0' + now.getHours()).slice(-2);
-            var minutes = ('0' + now.getMinutes()).slice(-2);
-            var seconds = ('0' + now.getSeconds()).slice(-2);
+            // var now = new Date();
+            // var year = now.getFullYear();
+            // var month = ('0' + (now.getMonth() + 1)).slice(-2); // Months are zero-based
+            // var day = ('0' + now.getDate()).slice(-2);
+            // var hours = ('0' + now.getHours()).slice(-2);
+            // var minutes = ('0' + now.getMinutes()).slice(-2);
+            // var seconds = ('0' + now.getSeconds()).slice(-2);
 
-            var formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-            $('#ReceivedDate').val(formattedDate);
+            // var formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            // $('#ReceivedDate').val(formattedDate);
+            var today = new Date().toISOString().split('T')[0];
+            $('#ReceivedDate').val(today);
 
             // Handle showing the game addition modal
             $("#AddGame").click(function () {
@@ -134,6 +166,39 @@
                     }
                 });
             });
+
+            // Handle showing the owner addition modal
+            $("#AddOwner").click(function () {
+                console.log('#AddOwner clicked');
+                $('#addOwnerModal').modal('show');
+            });
+
+            // Handle the owner addition modal
+            $('#addOwnerForm').submit(function (event) {
+                console.log('#addOwnerForm.submit');
+                event.preventDefault();
+                var ownerName = $('#OwnerName').val();
+
+                $.ajax({
+                    url: '@Url.Action("AddOwner", "Repairs")',
+                    type: 'POST',
+                    data: { OwnerName: ownerName },
+                    success: function (response) {
+                        console.log('#addOwnerForm.submit success');
+                        // Add the new owner to the dropdown list
+                        var newOption = new Option(response.ownerName, response.ownerId, true, true);
+                        $('select[name="OwnerId"]').append(newOption).trigger('change');
+
+                        // Close the modal
+                        $('#addOwnerModal').modal('hide');
+                    },
+                    error: function () {
+                        console.log('#addOwnerForm.submit error');
+                        alert('Error adding owner.');
+                    }
+                });
+            });
+
 
         });
     </script>

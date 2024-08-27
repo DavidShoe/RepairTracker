@@ -33,9 +33,8 @@ namespace RepairTracker.Controllers
         // GET: Repairs
         public IActionResult RepairsIndex()
         {
-//            var gameRepairContext = _context.Repairs.Include(r => r.Game).Include(r => r.Technician);
             var repairs = new RepairsViewModel(_context);
-            var activeRepairs = _context.Repairs.Where(r => r.FinishedDate == null).ToList();
+            var activeRepairs = _context.Repairs.Where(r => (r.FinishedDate == null && r.StartDate != null)).ToList();
             var backlog = _context.Repairs.Where(r => r.StartDate == null).ToList();
             var history = _context.Repairs.Where(r => r.FinishedDate != null).ToList();
             repairs.ActiveRepairs = activeRepairs;
@@ -89,6 +88,31 @@ namespace RepairTracker.Controllers
 
             return Json(new { gameId = newGame.GameId, gameName = newGame.GameName });
         }
+
+        [HttpPost]
+        public IActionResult AddOwner(string ownerName)
+        {
+            Debug.WriteLine("AddOwner called with OwnerName: " + ownerName);
+
+            if (string.IsNullOrEmpty(ownerName))
+            {
+                return BadRequest("Owner name is required.");
+            }
+
+            // Check to see if the Owner already exists
+            var Owner = _context.Owners.FirstOrDefault(g => g.OwnerName == ownerName);
+            if (Owner != null)
+            {
+                return BadRequest("Owner already exists.");
+            }
+
+            var newOwner = new Owner { OwnerName = ownerName };
+            _context.Owners.Add(newOwner);
+            _context.SaveChanges();
+
+            return Json(new { OwnerId = newOwner.OwnerId, OwnerName = newOwner.OwnerName });
+        }
+
 
 
         // GET: Repairs/Create
