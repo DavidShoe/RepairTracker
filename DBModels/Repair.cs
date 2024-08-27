@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RepairTracker.DBModels
 {
@@ -8,17 +9,24 @@ namespace RepairTracker.DBModels
     {
         public int RepairId { get; set; }
 
+        [Display(Name = "Game")]
         public int GameId { get; set; }
 
+        [Display(Name = "Tech")]
         public int TechnicianId { get; set; }
 
         public DateOnly? FinishedDate { get; set; }
+        [Display(Name = "Received Date")]
 
         public DateOnly? ReceivedDate { get; set; }
 
+        [Display(Name = "Owner")]
         public int OwnerId { get; set; }
 
+        [Display(Name = "Start Date")]
         public DateTime? StartDate { get; set; }
+
+        public String? CustomerStates { get; set; }
 
         public virtual Game Game { get; set; } = null!;
 

@@ -33,19 +33,14 @@ namespace RepairTracker.Controllers
         public IActionResult RepairsIndex()
         {
 //            var gameRepairContext = _context.Repairs.Include(r => r.Game).Include(r => r.Technician);
-
             var repairs = new RepairsViewModel(_context);
-
             var activeRepairs = _context.Repairs.Where(r => r.FinishedDate == null).ToList();
             var backlog = _context.Repairs.Where(r => r.StartDate == null).ToList();
             var history = _context.Repairs.Where(r => r.FinishedDate != null).ToList();
-
             repairs.ActiveRepairs = activeRepairs;
             repairs.Backlog = backlog;
             repairs.History = history;
-
             return View(repairs);
-
             //return View(await gameRepairContext.ToListAsync());
         }
 
@@ -59,6 +54,7 @@ namespace RepairTracker.Controllers
 
             var repair = await _context.Repairs
                 .Include(r => r.Game)
+                .Include(r => r.Owner)
                 .Include(r => r.Technician)
                 .FirstOrDefaultAsync(m => m.RepairId == id);
             if (repair == null)
@@ -72,8 +68,9 @@ namespace RepairTracker.Controllers
         // GET: Repairs/Create
         public IActionResult Create()
         {
-            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId");
-            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId");
+            ViewData["GameNames"] = new SelectList(_context.Games, "GameId", "GameName");
+            ViewData["OwnerNames"] = new SelectList(_context.Owners, "OwnerId", "OwnerName");
+            ViewData["TechnicianNames"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianName");
             return View();
         }
 
@@ -82,7 +79,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RepairId,GameId,TechnicianId,ReceivedDate,FinishedDate,StartDate")] Repair repair)
+        public async Task<IActionResult> Create([Bind("RepairId,GameId,TechnicianId,FinishedDate,ReceivedDate,OwnerId,StartDate")] Repair repair)
         {
             if (ModelState.IsValid)
             {
@@ -91,6 +88,7 @@ namespace RepairTracker.Controllers
                 return RedirectToAction(nameof(RepairsIndex));
             }
             ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
+            ViewData["OwnerId"] = new SelectList(_context.Owners, "OwnerId", "OwnerId", repair.OwnerId);
             ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
             return View(repair);
         }
@@ -109,6 +107,7 @@ namespace RepairTracker.Controllers
                 return NotFound();
             }
             ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
+            ViewData["OwnerId"] = new SelectList(_context.Owners, "OwnerId", "OwnerId", repair.OwnerId);
             ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
             return View(repair);
         }
@@ -118,7 +117,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RepairId,GameId,TechnicianId,ReceivedDate,FinishedDate,StartDate")] Repair repair)
+        public async Task<IActionResult> Edit(int id, [Bind("RepairId,GameId,TechnicianId,FinishedDate,ReceivedDate,OwnerId,StartDate")] Repair repair)
         {
             if (id != repair.RepairId)
             {
@@ -146,6 +145,7 @@ namespace RepairTracker.Controllers
                 return RedirectToAction(nameof(RepairsIndex));
             }
             ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
+            ViewData["OwnerId"] = new SelectList(_context.Owners, "OwnerId", "OwnerId", repair.OwnerId);
             ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
             return View(repair);
         }
@@ -160,6 +160,7 @@ namespace RepairTracker.Controllers
 
             var repair = await _context.Repairs
                 .Include(r => r.Game)
+                .Include(r => r.Owner)
                 .Include(r => r.Technician)
                 .FirstOrDefaultAsync(m => m.RepairId == id);
             if (repair == null)
