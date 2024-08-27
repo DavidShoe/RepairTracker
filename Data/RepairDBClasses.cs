@@ -61,9 +61,6 @@ namespace GameRepairApp.Models
         public int GameID { get; set; }
         [Display(Name = "Name")]
         public string? GameName { get; set; }
-        public int OwnerID { get; set; }
-
-        public Owner? Owner { get; set; }
         public ICollection<Repair>? Repairs { get; set; }
     }
 
@@ -72,6 +69,7 @@ namespace GameRepairApp.Models
         public int RepairID { get; set; }
         public int GameID { get; set; }
         public int TechnicianID { get; set; }
+        public int OwnerId { get; set; }
         public DateOnly? ReceivedDate { get; set; }
         public DateOnly? FinishedDate { get; set; }
         public DateTime? StartDate { get; set; }

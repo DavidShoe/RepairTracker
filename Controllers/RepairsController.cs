@@ -10,6 +10,17 @@ using RepairTracker.Data;
 
 namespace RepairTracker.Controllers
 {
+    public class RepairsViewModel
+    {
+        private readonly GameRepairContext _context;
+        public RepairsViewModel(GameRepairContext context)
+        {
+            _context = context;
+        }
+        public List<Repair>? ActiveRepairs { get; set; }
+        public List<Repair>? Backlog { get; set; }
+        public List<Repair>? History { get; set; }
+    }
     public class RepairsController : Controller
     {
         private readonly GameRepairContext _context;
@@ -20,10 +31,23 @@ namespace RepairTracker.Controllers
         }
 
         // GET: Repairs
-        public async Task<IActionResult> RepairsIndex()
+        public IActionResult RepairsIndex()
         {
-            var gameRepairContext = _context.Repairs.Include(r => r.Game).Include(r => r.Technician);
-            return View(await gameRepairContext.ToListAsync());
+//            var gameRepairContext = _context.Repairs.Include(r => r.Game).Include(r => r.Technician);
+
+            var repairs = new RepairsViewModel(_context);
+
+            var activeRepairs = _context.Repairs.Where(r => r.FinishedDate == null).ToList();
+            var backlog = _context.Repairs.Where(r => r.StartDate == null).ToList();
+            var history = _context.Repairs.Where(r => r.FinishedDate != null).ToList();
+
+            repairs.ActiveRepairs = activeRepairs;
+            repairs.Backlog = backlog;
+            repairs.History = history;
+
+            return View(repairs);
+
+            //return View(await gameRepairContext.ToListAsync());
         }
 
         // GET: Repairs/Details/5
