@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using GameRepairApp.Models;
-using RepairTracker.Data;
+using RepairTracker.DBModels;
 
 namespace RepairTracker.Controllers
 {
@@ -34,7 +33,7 @@ namespace RepairTracker.Controllers
             }
 
             var technician = await _context.Technicians
-                .FirstOrDefaultAsync(m => m.TechnicianID == id);
+                .FirstOrDefaultAsync(m => m.TechnicianId == id);
             if (technician == null)
             {
                 return NotFound();
@@ -54,7 +53,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TechnicianID,TechnicianName,HourlyRate")] Technician technician)
+        public async Task<IActionResult> Create([Bind("TechnicianId,TechnicianName,HourlyRate")] Technician technician)
         {
             if (ModelState.IsValid)
             {
@@ -86,9 +85,9 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TechnicianID,TechnicianName,HourlyRate")] Technician technician)
+        public async Task<IActionResult> Edit(int id, [Bind("TechnicianId,TechnicianName,HourlyRate")] Technician technician)
         {
-            if (id != technician.TechnicianID)
+            if (id != technician.TechnicianId)
             {
                 return NotFound();
             }
@@ -102,7 +101,7 @@ namespace RepairTracker.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!TechnicianExists(technician.TechnicianID))
+                    if (!TechnicianExists(technician.TechnicianId))
                     {
                         return NotFound();
                     }
@@ -125,7 +124,7 @@ namespace RepairTracker.Controllers
             }
 
             var technician = await _context.Technicians
-                .FirstOrDefaultAsync(m => m.TechnicianID == id);
+                .FirstOrDefaultAsync(m => m.TechnicianId == id);
             if (technician == null)
             {
                 return NotFound();
@@ -151,7 +150,7 @@ namespace RepairTracker.Controllers
 
         private bool TechnicianExists(int id)
         {
-            return _context.Technicians.Any(e => e.TechnicianID == id);
+            return _context.Technicians.Any(e => e.TechnicianId == id);
         }
     }
 }

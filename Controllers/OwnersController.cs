@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using GameRepairApp.Models;
-using RepairTracker.Data;
+using RepairTracker.DBModels;
 
 namespace RepairTracker.Controllers
 {
@@ -34,7 +33,7 @@ namespace RepairTracker.Controllers
             }
 
             var owner = await _context.Owners
-                .FirstOrDefaultAsync(m => m.OwnerID == id);
+                .FirstOrDefaultAsync(m => m.OwnerId == id);
             if (owner == null)
             {
                 return NotFound();
@@ -54,7 +53,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("OwnerID,OwnerName,ContactInfo")] Owner owner)
+        public async Task<IActionResult> Create([Bind("OwnerId,OwnerName,ContactInfo")] Owner owner)
         {
             if (ModelState.IsValid)
             {
@@ -86,9 +85,9 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OwnerID,OwnerName,ContactInfo")] Owner owner)
+        public async Task<IActionResult> Edit(int id, [Bind("OwnerId,OwnerName,ContactInfo")] Owner owner)
         {
-            if (id != owner.OwnerID)
+            if (id != owner.OwnerId)
             {
                 return NotFound();
             }
@@ -102,7 +101,7 @@ namespace RepairTracker.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!OwnerExists(owner.OwnerID))
+                    if (!OwnerExists(owner.OwnerId))
                     {
                         return NotFound();
                     }
@@ -125,7 +124,7 @@ namespace RepairTracker.Controllers
             }
 
             var owner = await _context.Owners
-                .FirstOrDefaultAsync(m => m.OwnerID == id);
+                .FirstOrDefaultAsync(m => m.OwnerId == id);
             if (owner == null)
             {
                 return NotFound();
@@ -151,7 +150,7 @@ namespace RepairTracker.Controllers
 
         private bool OwnerExists(int id)
         {
-            return _context.Owners.Any(e => e.OwnerID == id);
+            return _context.Owners.Any(e => e.OwnerId == id);
         }
     }
 }

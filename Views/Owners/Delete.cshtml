@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Owner
+﻿@model RepairTracker.DBModels.Owner
 
 @{
     ViewData["Title"] = "Delete";
@@ -26,7 +26,7 @@
     </dl>
     
     <form asp-action="Delete">
-        <input type="hidden" asp-for="OwnerID" />
+        <input type="hidden" asp-for="OwnerId" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="OwnersIndex">Back to List</a>
     </form>

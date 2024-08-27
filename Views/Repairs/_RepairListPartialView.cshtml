@@ -1,4 +1,4 @@
-﻿@model IList<GameRepairApp.Models.Repair>
+﻿@model IList<RepairTracker.DBModels.Repair>
 
 
 <table class="table">
@@ -27,7 +27,7 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Game.GameID)
+                    @Html.DisplayFor(modelItem => item.Game.GameId)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.ReceivedDate)
@@ -39,12 +39,12 @@
                     @Html.DisplayFor(modelItem => item.FinishedDate)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Technician.TechnicianID)
+                    @Html.DisplayFor(modelItem => item.Technician.TechnicianId)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.RepairID">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.RepairID">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.RepairID">Delete</a>
+                    <a asp-action="Edit" asp-route-id="@item.RepairId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.RepairId">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.RepairId">Delete</a>
                 </td>
             </tr>
         }

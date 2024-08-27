@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Part
+﻿@model RepairTracker.DBModels.Part
 
 @{
     ViewData["Title"] = "Create";
@@ -33,14 +33,14 @@
                 <span asp-validation-for="Supplier" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="CategoryID" class="control-label"></label>
+                <label asp-for="CategoryId" class="control-label"></label>
                 <div class="input-group">
-                    <select asp-for="CategoryID" class="form-control" asp-items="ViewBag.Categories"></select>
+                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories"></select>
                     <div class="input-group-append">
                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategoryModal">New Category</button>
                     </div>
                 </div>
-                <span asp-validation-for="CategoryID" class="text-danger"></span>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -97,8 +97,8 @@
                             console.log("AJAX success", result);
                             if (result.success) {
                                 // Add the new category to the dropdown
-                                var newOption = new Option(result.category.CategoryName, result.category.CategoryID, true, true);
-                                $('select[name="CategoryID"]').append(newOption).trigger('change');
+                                var newOption = new Option(result.category.CategoryName, result.category.CategoryId, true, true);
+                                $('select[name="CategoryId"]').append(newOption).trigger('change');
 
                                 // Close the modal
                                 $('#addCategoryModal').modal('hide');

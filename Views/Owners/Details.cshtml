@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Owner
+﻿@model RepairTracker.DBModels.Owner
 
 @{
     ViewData["Title"] = "Details";
@@ -25,6 +25,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.OwnerID">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.OwnerId">Edit</a> |
     <a asp-action="OwnersIndex">Back to List</a>
 </div>

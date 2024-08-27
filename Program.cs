@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RepairTracker.Models;
-using RepairTracker.Data;
+using RepairTracker.DBModels;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using GameRepairApp.Models;
-using RepairTracker.Data;
+using RepairTracker.DBModels;
 
 namespace RepairTracker.Controllers
 {
@@ -61,7 +60,7 @@ namespace RepairTracker.Controllers
             var repair = await _context.Repairs
                 .Include(r => r.Game)
                 .Include(r => r.Technician)
-                .FirstOrDefaultAsync(m => m.RepairID == id);
+                .FirstOrDefaultAsync(m => m.RepairId == id);
             if (repair == null)
             {
                 return NotFound();
@@ -73,8 +72,8 @@ namespace RepairTracker.Controllers
         // GET: Repairs/Create
         public IActionResult Create()
         {
-            ViewData["GameID"] = new SelectList(_context.Games, "GameID", "GameID");
-            ViewData["TechnicianID"] = new SelectList(_context.Technicians, "TechnicianID", "TechnicianID");
+            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId");
+            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId");
             return View();
         }
 
@@ -83,7 +82,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RepairID,GameID,TechnicianID,ReceivedDate,FinishedDate,StartDate")] Repair repair)
+        public async Task<IActionResult> Create([Bind("RepairId,GameId,TechnicianId,ReceivedDate,FinishedDate,StartDate")] Repair repair)
         {
             if (ModelState.IsValid)
             {
@@ -91,8 +90,8 @@ namespace RepairTracker.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(RepairsIndex));
             }
-            ViewData["GameID"] = new SelectList(_context.Games, "GameID", "GameID", repair.GameID);
-            ViewData["TechnicianID"] = new SelectList(_context.Technicians, "TechnicianID", "TechnicianID", repair.TechnicianID);
+            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
+            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
             return View(repair);
         }
 
@@ -109,8 +108,8 @@ namespace RepairTracker.Controllers
             {
                 return NotFound();
             }
-            ViewData["GameID"] = new SelectList(_context.Games, "GameID", "GameID", repair.GameID);
-            ViewData["TechnicianID"] = new SelectList(_context.Technicians, "TechnicianID", "TechnicianID", repair.TechnicianID);
+            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
+            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
             return View(repair);
         }
 
@@ -119,9 +118,9 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RepairID,GameID,TechnicianID,ReceivedDate,FinishedDate,StartDate")] Repair repair)
+        public async Task<IActionResult> Edit(int id, [Bind("RepairId,GameId,TechnicianId,ReceivedDate,FinishedDate,StartDate")] Repair repair)
         {
-            if (id != repair.RepairID)
+            if (id != repair.RepairId)
             {
                 return NotFound();
             }
@@ -135,7 +134,7 @@ namespace RepairTracker.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RepairExists(repair.RepairID))
+                    if (!RepairExists(repair.RepairId))
                     {
                         return NotFound();
                     }
@@ -146,8 +145,8 @@ namespace RepairTracker.Controllers
                 }
                 return RedirectToAction(nameof(RepairsIndex));
             }
-            ViewData["GameID"] = new SelectList(_context.Games, "GameID", "GameID", repair.GameID);
-            ViewData["TechnicianID"] = new SelectList(_context.Technicians, "TechnicianID", "TechnicianID", repair.TechnicianID);
+            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
+            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
             return View(repair);
         }
 
@@ -162,7 +161,7 @@ namespace RepairTracker.Controllers
             var repair = await _context.Repairs
                 .Include(r => r.Game)
                 .Include(r => r.Technician)
-                .FirstOrDefaultAsync(m => m.RepairID == id);
+                .FirstOrDefaultAsync(m => m.RepairId == id);
             if (repair == null)
             {
                 return NotFound();
@@ -188,7 +187,7 @@ namespace RepairTracker.Controllers
 
         private bool RepairExists(int id)
         {
-            return _context.Repairs.Any(e => e.RepairID == id);
+            return _context.Repairs.Any(e => e.RepairId == id);
         }
     }
 }

@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using GameRepairApp.Models;
-using RepairTracker.Data;
+using RepairTracker.DBModels;
 using System.Diagnostics;
 
 namespace RepairTracker.Controllers
@@ -48,7 +47,7 @@ namespace RepairTracker.Controllers
 
             var part = await _context.Parts
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.PartID == id);
+                .FirstOrDefaultAsync(m => m.PartId == id);
             if (part == null)
             {
                 return NotFound();
@@ -60,7 +59,7 @@ namespace RepairTracker.Controllers
         // GET: Parts/Create
         public IActionResult Create()
         {
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
             return View();
         }
 
@@ -69,7 +68,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("PartID,PartName,Cost,Sale,Supplier,CategoryID")] Part part)
+        public async Task<IActionResult> Create([Bind("PartId,PartName,Cost,Sale,Supplier,CategoryId")] Part part)
         {
             if (ModelState.IsValid)
             {
@@ -77,7 +76,7 @@ namespace RepairTracker.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(PartsIndex));
             }
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName", part.CategoryID);
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName", part.CategoryId);
             return View(part);
         }
 
@@ -94,7 +93,7 @@ namespace RepairTracker.Controllers
             {
                 return NotFound();
             }
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
             return View(part);
         }
 
@@ -103,9 +102,9 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PartID,PartName,Cost,Sale,Supplier,CategoryID")] Part part)
+        public async Task<IActionResult> Edit(int id, [Bind("PartId,PartName,Cost,Sale,Supplier,CategoryId")] Part part)
         {
-            if (id != part.PartID)
+            if (id != part.PartId)
             {
                 return NotFound();
             }
@@ -119,7 +118,7 @@ namespace RepairTracker.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!PartExists(part.PartID))
+                    if (!PartExists(part.PartId))
                     {
                         return NotFound();
                     }
@@ -130,7 +129,7 @@ namespace RepairTracker.Controllers
                 }
                 return RedirectToAction(nameof(PartsIndex));
             }
-            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryID", "CategoryName");
+            ViewData["Categories"] = new SelectList(_context.Categories, "CategoryId", "CategoryName");
             return View(part);
         }
 
@@ -144,7 +143,7 @@ namespace RepairTracker.Controllers
 
             var part = await _context.Parts
                 .Include(p => p.Category)
-                .FirstOrDefaultAsync(m => m.PartID == id);
+                .FirstOrDefaultAsync(m => m.PartId == id);
             if (part == null)
             {
                 return NotFound();
@@ -186,7 +185,7 @@ namespace RepairTracker.Controllers
 
         private bool PartExists(int id)
         {
-            return _context.Parts.Any(e => e.PartID == id);
+            return _context.Parts.Any(e => e.PartId == id);
         }
 
         public IActionResult AddCategoryPartialView()

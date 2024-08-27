@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Category
+﻿@model RepairTracker.DBModels.Category
 
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using System.ComponentModel.DataAnnotations
@@ -44,8 +44,8 @@
                             console.log("AJAX success", result);
                             if (result.success) {
                                 // Add the new category to the dropdown
-                                var newOption = new Option(result.category.CategoryName, result.category.CategoryID, true, true);
-                                $('select[name="CategoryID"]').append(newOption).trigger('change');
+                                var newOption = new Option(result.category.CategoryName, result.category.CategoryId, true, true);
+                                $('select[name="CategoryId"]').append(newOption).trigger('change');
 
                                 // Close the modal
                                 $('#addCategoryModal').modal('hide');

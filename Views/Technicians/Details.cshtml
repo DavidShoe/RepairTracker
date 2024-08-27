@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Technician
+﻿@model RepairTracker.DBModels.Technician
 
 @{
     ViewData["Title"] = "Details";
@@ -25,6 +25,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.TechnicianID">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.TechnicianId">Edit</a> |
     <a asp-action="TechIndex">Back to List</a>
 </div>

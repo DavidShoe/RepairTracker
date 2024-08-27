@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RepairTracker.DBModels;
 
@@ -11,9 +12,11 @@ using RepairTracker.DBModels;
 namespace RepairTracker.Migrations
 {
     [DbContext(typeof(GameRepairContext))]
-    partial class GameRepairContextModelSnapshot : ModelSnapshot
+    [Migration("20240827043913_UpdateDatabaseClassesFromDB")]
+    partial class UpdateDatabaseClassesFromDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

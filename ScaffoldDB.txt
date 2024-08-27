@@ -1,0 +1,4 @@
+﻿For generating the database first models
+https://learn.microsoft.com/en-us/ef/core/managing-schemas/scaffolding/?tabs=dotnet-core-cli
+
+Scaffold-DbContext "server=DEVX1\SQLEXPRESS01;database=RepairTracker;Trusted_Connection=True;Trust Server Certificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir DBModels -Context GameRepairContext -Force

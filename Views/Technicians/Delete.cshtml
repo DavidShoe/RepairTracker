@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Technician
+﻿@model RepairTracker.DBModels.Technician
 
 @{
     ViewData["Title"] = "Delete";
@@ -26,7 +26,7 @@
     </dl>
     
     <form asp-action="Delete">
-        <input type="hidden" asp-for="TechnicianID" />
+        <input type="hidden" asp-for="TechnicianId" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="TechIndex">Back to List</a>
     </form>

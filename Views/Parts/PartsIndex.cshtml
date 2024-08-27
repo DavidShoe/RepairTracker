@@ -1,4 +1,4 @@
-﻿@model IEnumerable<GameRepairApp.Models.Part>
+﻿@model IEnumerable<RepairTracker.DBModels.Part>
 
 @{
     ViewData["Title"] = "Index";
@@ -50,10 +50,10 @@
                     @Html.DisplayFor(modelItem => item.Category.CategoryName)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.PartID">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.PartID">Details</a>
+                    <a asp-action="Edit" asp-route-id="@item.PartId">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.PartId">Details</a>
 @*                     |
-                    <a asp-action="Delete" asp-route-id="@item.PartID">Delete</a>
+                    <a asp-action="Delete" asp-route-id="@item.PartId">Delete</a>
  *@                </td>
             </tr>
         }

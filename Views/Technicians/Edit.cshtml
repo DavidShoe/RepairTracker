@@ -1,4 +1,4 @@
-﻿@model GameRepairApp.Models.Technician
+﻿@model RepairTracker.DBModels.Technician
 
 @{
     ViewData["Title"] = "Edit";
@@ -12,7 +12,7 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="TechnicianID" />
+            <input type="hidden" asp-for="TechnicianId" />
             <div class="form-group">
                 <label asp-for="TechnicianName" class="control-label"></label>
                 <input asp-for="TechnicianName" class="form-control" />
