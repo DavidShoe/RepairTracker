@@ -1,0 +1,59 @@
+﻿@model IEnumerable<GameRepairApp.Models.Repair>
+
+@{
+    ViewData["Title"] = "Repairs Index";
+}
+
+<h1>Repairs Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ReceivedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FinishedDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Technician)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReceivedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FinishedDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Game.GameID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Technician.TechnicianID)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.RepairID">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.RepairID">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.RepairID">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
