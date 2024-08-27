@@ -69,12 +69,15 @@ namespace GameRepairApp.Models
         public int RepairID { get; set; }
         public int GameID { get; set; }
         public int TechnicianID { get; set; }
-        public DateTime RepairDate { get; set; } = DateTime.Now;
-        public string? RepairNotes { get; set; }
-
+        public DateOnly? ReceivedDate { get; set; }
+        public DateOnly? FinishedDate { get; set; }
+        public DateTime? StartDate { get; set; }
         public Game? Game { get; set; }
         public Technician? Technician { get; set; }
         public ICollection<RepairPart>? RepairParts { get; set; }
+
+        public ICollection<RepairNote>? RepairNotes { get; set; }
+        public ICollection<WallTime>? WallTimes { get; set; }
     }
 
     public class RepairPart
@@ -86,5 +89,26 @@ namespace GameRepairApp.Models
 
         public Repair? Repair { get; set; }
         public Part? Part { get; set; }
+    }
+
+    public class RepairNote
+    {
+        public int RepairNoteID { get; set; }
+        public int RepairID { get; set; }
+        public DateTime NoteDate { get; set; } = DateTime.Now;
+        public string? Note { get; set; }
+
+        public Repair? Repair { get; set; }
+    }
+
+    public class WallTime
+    {
+        public int WallTimeID { get; set; }
+        public int RepairID { get; set; }
+        public int TechnicianID { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+
+        public Repair? Repair { get; set; }
     }
 }

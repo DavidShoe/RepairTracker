@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RepairTracker.Data;
 
@@ -11,9 +12,11 @@ using RepairTracker.Data;
 namespace RepairTracker.Migrations
 {
     [DbContext(typeof(GameRepairContext))]
-    partial class GameRepairContextModelSnapshot : ModelSnapshot
+    [Migration("20240827003434_AddRepairDetails")]
+    partial class AddRepairDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -162,7 +165,7 @@ namespace RepairTracker.Migrations
 
                     b.HasIndex("RepairID");
 
-                    b.ToTable("RepairNotes");
+                    b.ToTable("RepairNote");
                 });
 
             modelBuilder.Entity("GameRepairApp.Models.RepairPart", b =>
@@ -208,33 +211,6 @@ namespace RepairTracker.Migrations
                     b.HasKey("TechnicianID");
 
                     b.ToTable("Technicians");
-                });
-
-            modelBuilder.Entity("GameRepairApp.Models.WallTime", b =>
-                {
-                    b.Property<int>("WallTimeID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WallTimeID"));
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RepairID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TechnicianID")
-                        .HasColumnType("int");
-
-                    b.HasKey("WallTimeID");
-
-                    b.HasIndex("RepairID");
-
-                    b.ToTable("WallTimes");
                 });
 
             modelBuilder.Entity("GameRepairApp.Models.Game", b =>
@@ -308,17 +284,6 @@ namespace RepairTracker.Migrations
                     b.Navigation("Repair");
                 });
 
-            modelBuilder.Entity("GameRepairApp.Models.WallTime", b =>
-                {
-                    b.HasOne("GameRepairApp.Models.Repair", "Repair")
-                        .WithMany("WallTimes")
-                        .HasForeignKey("RepairID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Repair");
-                });
-
             modelBuilder.Entity("GameRepairApp.Models.Category", b =>
                 {
                     b.Navigation("Parts");
@@ -344,8 +309,6 @@ namespace RepairTracker.Migrations
                     b.Navigation("RepairNotes");
 
                     b.Navigation("RepairParts");
-
-                    b.Navigation("WallTimes");
                 });
 
             modelBuilder.Entity("GameRepairApp.Models.Technician", b =>

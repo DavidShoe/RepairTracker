@@ -27,6 +27,8 @@ namespace RepairTracker.Data
         public DbSet<Repair> Repairs { get; set; }
         public DbSet<RepairPart> RepairParts { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<RepairNote> RepairNotes { get; set; }
+        public DbSet<WallTime> WallTimes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +61,11 @@ namespace RepairTracker.Data
                 .HasMany(c => c.Parts)
                 .WithOne(p => p.Category)
                 .HasForeignKey(p => p.CategoryID);
+
+            modelBuilder.Entity<WallTime>()
+                .HasOne(wt => wt.Repair)
+                .WithMany(r => r.WallTimes)
+                .HasForeignKey(wt => wt.RepairID);
         }
     }
 }
