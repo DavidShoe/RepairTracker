@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -64,6 +65,31 @@ namespace RepairTracker.Controllers
 
             return View(repair);
         }
+
+        [HttpPost]
+        public IActionResult AddGame(string gameName)
+        {
+            Debug.WriteLine("AddGame called with gameName: " + gameName);
+
+            if (string.IsNullOrEmpty(gameName)) 
+            {
+                return BadRequest("Game name is required.");
+            }
+
+            // Check to see if the game already exists
+            var game = _context.Games.FirstOrDefault(g => g.GameName == gameName);
+            if (game != null)
+            {
+                return BadRequest("Game already exists.");
+            }
+
+            var newGame = new Game { GameName = gameName };
+            _context.Games.Add(newGame);
+            _context.SaveChanges();
+
+            return Json(new { gameId = newGame.GameId, gameName = newGame.GameName });
+        }
+
 
         // GET: Repairs/Create
         public IActionResult Create()
