@@ -1,5 +1,7 @@
 ﻿@model IList<RepairTracker.DBModels.Repair>
-
+@{
+    string mode = ViewData["mode"] as string ?? "";
+}
 
 <table class="table">
     <thead>
@@ -8,14 +10,23 @@
                 @Html.DisplayNameFor(model => model[0].Game)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model[0].Owner)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model[0].ReceivedDate)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model[0].StartDate)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model[0].FinishedDate)
-            </th>
+            @if (mode == "Active")
+            {
+                <th>
+                    @Html.DisplayNameFor(model => model[0].StartDate)
+                </th>
+            }
+            @if (mode == "History")
+            {
+                <th>
+                    @Html.DisplayNameFor(model => model[0].FinishedDate)
+                </th>
+            }
             <th>
                 @Html.DisplayNameFor(model => model[0].Technician)
             </th>
@@ -27,25 +38,52 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Game.GameId)
+                    @Html.DisplayFor(modelItem => item.Game.GameName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Owner.OwnerName)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.ReceivedDate)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.StartDate)
+                @if (mode == "Active")
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartDate)
                 </td>
+                }
+                @if (mode == "History")
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FinishedDate)
+                    </td>
+                }
                 <td>
-                    @Html.DisplayFor(modelItem => item.FinishedDate)
+                    @Html.DisplayFor(modelItem => item.Technician.TechnicianName)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Technician.TechnicianId)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.RepairId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.RepairId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.RepairId">Delete</a>
-                </td>
+
+                @switch(mode)
+                {
+                    case "Active":
+                        <td>
+                            <a asp-action="Work" asp-route-id="@item.RepairId">Work</a> |
+                            <a asp-action="Details" asp-route-id="@item.RepairId">View</a>
+                        </td>
+                    break;
+
+                    case "Backlog":
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.RepairId">Edit</a> |
+                            <a asp-action="Start" asp-route-id="@item.RepairId">Start</a>
+                        </td>
+                    break;
+
+                    case "History":
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.RepairId">View</a>
+                        </td>
+                        break;
+                }
             </tr>
         }
     </tbody>

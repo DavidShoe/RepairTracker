@@ -13,11 +13,11 @@
 </p>
 
 <h2>Active repairs</h2>
-@await Html.PartialAsync("_RepairListPartialView", Model.ActiveRepairs)
+@await Html.PartialAsync("_RepairListPartialView", Model.ActiveRepairs, new ViewDataDictionary(ViewData) { { "Mode", "Active" } })
 
 <h2>Backlog</h2>
-@await Html.PartialAsync("_RepairListPartialView", Model.Backlog)
+@await Html.PartialAsync("_RepairListPartialView", Model.Backlog, new ViewDataDictionary(ViewData) { { "Mode", "Backlog" } })
 
 <h2>Completed repairs</h2>
-@await Html.PartialAsync("_RepairListPartialView", Model.History)
+@await Html.PartialAsync("_RepairListPartialView", Model.History, new ViewDataDictionary(ViewData) { { "Mode", "History" } })
 
