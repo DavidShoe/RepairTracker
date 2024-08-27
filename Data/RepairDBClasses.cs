@@ -23,6 +23,7 @@ namespace GameRepairApp.Models
         [Display(Name = "Name")]
         public string? TechnicianName { get; set; }
         [Display(Name = "Rate")]
+        [Precision(5, 2)]
         public decimal HourlyRate { get; set; }
 
         public ICollection<Repair>? Repairs { get; set; }
@@ -33,13 +34,15 @@ namespace GameRepairApp.Models
         public int PartID { get; set; }
         [Display(Name = "Name")]
         public string? PartName { get; set; }
+        [Precision(7, 2)]
         public decimal Cost { get; set; }
+        [Precision(7, 2)]
         public decimal Sale { get; set; }
 
         public string? Supplier { get; set; }
         public int CategoryID { get; set; }
 
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
 
 
         public ICollection<RepairPart>? RepairParts { get; set; }
@@ -48,9 +51,9 @@ namespace GameRepairApp.Models
     {
         public int CategoryID { get; set; }
         [Display(Name = "Name")]
-        public string CategoryName { get; set; }
+        public string? CategoryName { get; set; }
 
-        public ICollection<Part> Parts { get; set; }
+        public ICollection<Part>? Parts { get; set; }
     }
 
     public class Game
