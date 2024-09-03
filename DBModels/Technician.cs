@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RepairTracker.DBModels
 {
@@ -8,6 +9,7 @@ namespace RepairTracker.DBModels
     {
         public int TechnicianId { get; set; }
 
+        [Display(Name = "Tech: ")]
         public string? TechnicianName { get; set; }
 
         public decimal HourlyRate { get; set; }

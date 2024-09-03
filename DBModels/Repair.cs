@@ -9,10 +9,10 @@ namespace RepairTracker.DBModels
     {
         public int RepairId { get; set; }
 
-        [Display(Name = "Game")]
+        [Display(Name = "Game: ")]
         public int GameId { get; set; }
 
-        [Display(Name = "Tech")]
+        [Display(Name = "Tech: ")]
         public int TechnicianId { get; set; }
 
         public DateOnly? FinishedDate { get; set; }
@@ -20,12 +20,13 @@ namespace RepairTracker.DBModels
 
         public DateOnly? ReceivedDate { get; set; }
 
-        [Display(Name = "Owner")]
+        [Display(Name = "Owner: ")]
         public int OwnerId { get; set; }
 
         [Display(Name = "Start Date")]
         public DateTime? StartDate { get; set; }
 
+        [Display(Name = "Customer States")]
         public String? CustomerStates { get; set; }
 
         public virtual Game Game { get; set; } = null!;

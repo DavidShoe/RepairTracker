@@ -1,0 +1,31 @@
+﻿@model RepairTracker.DBModels.RepairPart
+@{
+    int index = ViewData["Index"] as int? ?? 0;
+}
+
+@if (Model is not null)
+{
+    <tr>
+        <td class="cell" style="padding-top: 2px;">
+            <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deletePartLineItem(this, @Model.RepairPartId);" />
+        </td>
+
+        <td>
+            @Model.Part.PartName
+        </td>
+
+        <td>
+            <input type="number" asp-for="@Model.Part.Sale" class="form-control right-aligned-text sale " id="sale_@index" name="Repair.RepairParts[@index].Sale" />
+            <span asp-validation-for="@Model.Sale" class="text-danger"></span>
+        </td>
+
+        <td>
+            <input type="number" asp-for="@Model.Quantity" class="form-control no-spinners qty" id="qty_@index" name="Repair.RepairParts[@index].Quantity" value="@Model.Quantity" />
+            <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
+        </td>
+
+        <td id="lineTotal_@index">
+            @Model.LineTotal
+        </td>
+    </tr>
+}

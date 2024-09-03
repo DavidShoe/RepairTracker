@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairTracker.DBModels;
+using RepairTracker.Models;
 
 namespace RepairTracker.Controllers
 {
@@ -61,13 +62,18 @@ namespace RepairTracker.Controllers
             }
 
             var repair = await _context.Repairs
+                .Include(r => r.Game)
+                .Include(r => r.Owner)
+                .Include(r => r.Technician)
+                .Include(Game => Game.RepairNotes)
+                .Include(Game => Game.RepairParts)
                 .FirstOrDefaultAsync(m => m.RepairId == id);
             if (repair == null)
             {
                 return NotFound();
             }
 
-            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameName", repair.GameId);
+            ViewData["Parts"] = await _context.Parts.ToListAsync();
 
             return View(repair);
         }
@@ -87,10 +93,15 @@ namespace RepairTracker.Controllers
                 return NotFound();
             }
 
+            // Update the start date to now
             repair.StartDate = DateTime.Now;
+            // Update the context
             _context.Update(repair);
+            // save it to the back end
+            await _context.SaveChangesAsync();
 
-            return View(nameof(WorkOnRepair));
+            // And open the work on repair page
+            return View(nameof(WorkOnRepair), repair);
         }
 
 
@@ -188,6 +199,7 @@ namespace RepairTracker.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(RepairsIndex));
             }
+
             ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
             ViewData["OwnerId"] = new SelectList(_context.Owners, "OwnerId", "OwnerId", repair.OwnerId);
             ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
@@ -207,9 +219,9 @@ namespace RepairTracker.Controllers
             {
                 return NotFound();
             }
-            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameId", repair.GameId);
-            ViewData["OwnerId"] = new SelectList(_context.Owners, "OwnerId", "OwnerId", repair.OwnerId);
-            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianId", repair.TechnicianId);
+            ViewData["GameId"] = new SelectList(_context.Games, "GameId", "GameName", repair.GameId);
+            ViewData["OwnerId"] = new SelectList(_context.Owners, "OwnerId", "OwnerName", repair.OwnerId);
+            ViewData["TechnicianId"] = new SelectList(_context.Technicians, "TechnicianId", "TechnicianName", repair.TechnicianId);
             return View(repair);
         }
 
@@ -218,7 +230,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RepairId,GameId,TechnicianId,FinishedDate,ReceivedDate,OwnerId,StartDate")] Repair repair)
+        public async Task<IActionResult> Edit(int id, [Bind("RepairId,GameId,TechnicianId,FinishedDate,ReceivedDate,OwnerId,StartDate,CustomerStates")] Repair repair)
         {
             if (id != repair.RepairId)
             {
@@ -291,5 +303,141 @@ namespace RepairTracker.Controllers
         {
             return _context.Repairs.Any(e => e.RepairId == id);
         }
+
+        [HttpGet]
+
+        public async Task<IActionResult> LookupPart(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Json(new { success = false, message = "Query is empty" });
+            }
+
+            var parts = _context.Parts.AsQueryable();
+            var items = await parts
+                .Where(i => i.PartName!.ToString().Contains(query))
+                .ToListAsync();
+
+            if (items == null || !items.Any())
+            {
+                return Json(new { success = false, message = "No items found" });
+            }
+
+            return Json(new { success = true, items = items });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPartLineItem(int repairId, int partId, int quantity=1)
+        {
+            try
+            {
+                var repair = await _context.Repairs
+                    .Include(r => r.RepairParts)
+                    .ThenInclude(rp => rp.Part)
+                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
+
+                if (repair == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                var part = await _context.Parts.FindAsync(partId);
+                if (part == null)
+                {
+                   return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                var existingPart = repair.RepairParts.FirstOrDefault(rp => rp.PartId == partId);
+                if (existingPart == null)
+                {
+                    // part is not on the repair yet, add it
+                    var repairPart = new RepairPart(repairId, quantity, part);
+                    repair.RepairParts.Add(repairPart);
+                    _context.Update(part);
+                }
+                else
+                {
+                    // part is already on the repair, update the quantity
+                    existingPart.Quantity += 1;
+                    _context.Update(existingPart);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return PartialView("_PartsUsedTablePartialView", repair.RepairParts);
+            }
+            catch (Exception e)
+            {
+                return Json(new { success = false, message = e.Message });
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> DeletePartLineItem(int repairId, int repairPartId)
+        {
+            try
+            {
+                // Get the repair to remove the line from
+                var repair = await _context.Repairs
+                    .Include(r => r.RepairParts)
+                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
+
+                if (repair == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                // Logic to delete the line item from the database
+                var partToRemove = repair.RepairParts.FirstOrDefault(rp => rp.RepairPartId == repairPartId);
+                if (partToRemove == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                repair.RepairParts.Remove(partToRemove);
+
+                // save the change
+                await _context.SaveChangesAsync();
+
+                // Notify the caller that the delete was successful
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddNoteLine(int repairId)
+        {
+            try
+            {
+                var repair = await _context.Repairs
+                    .Include(r => r.RepairParts)
+                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
+
+                if (repair == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                // Add a new note
+                var note = new RepairNote(repairId);
+                repair.RepairNotes.Add(note);
+                _context.Update(repair);
+
+                await _context.SaveChangesAsync();
+
+                return PartialView("_NotesTablePartialView", repair.RepairNotes);
+            }
+            catch (Exception e)
+            {
+                return Json(new { success = false, message = e.Message });
+            }
+        }
+
+
     }
 }

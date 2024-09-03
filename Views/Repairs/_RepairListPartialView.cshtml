@@ -66,8 +66,9 @@
                 {
                     case "Active":
                         <td>
-                            <a asp-action="Work" asp-route-id="@item.RepairId">Work</a> |
-                            <a asp-action="Details" asp-route-id="@item.RepairId">View</a>
+                            <a asp-action="Edit" asp-route-id="@item.RepairId">Edit</a> |
+                            <a asp-action="WorkOnRepair" asp-route-id="@item.RepairId">Work on</a> |
+                            <a asp-action="Details" asp-route-id="@item.RepairId">Review</a>
                         </td>
                     break;
 
@@ -80,7 +81,7 @@
 
                     case "History":
                         <td>
-                            <a asp-action="Details" asp-route-id="@item.RepairId">View</a>
+                            <a asp-action="Details" asp-route-id="@item.RepairId">Review</a>
                         </td>
                         break;
                 }

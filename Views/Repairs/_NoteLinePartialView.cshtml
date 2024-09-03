@@ -1,0 +1,20 @@
+﻿@model RepairTracker.DBModels.RepairNote
+@{
+    int index = ViewData["Index"] as int? ?? 0;
+}
+
+@if (Model is not null)
+{
+    <tr>
+        <td class="cell" style="padding-top: 2px;">
+            <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deletePartLineItem(this, @Model.RepairNoteId);" />
+        </td>
+
+        <td>
+            @Model.NoteDate
+        </td>
+        <td>
+            @Model.Note
+        </td>
+    </tr>
+}

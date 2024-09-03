@@ -20,3 +20,7 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.scaleDown {
+    transform: scale(0.67);
+}
