@@ -81,7 +81,7 @@
                 </tbody>
             </table>
             <!-- Item Lookup Input in the middle -->
-            <input type="text" id="partLookupInput" class="form-control" placeholder="Lookup Item" autocomplete="off" style="height: 50;">
+            <input type="text" id="partLookupInput" class="form-control" placeholder="Enter Part" autocomplete="off" style="height: 50;">
 
             <!-- Lookup Results ListBox -->
             <select id="partLookupResults" class="form-control" size="5" style="overflow-y: auto;">
@@ -153,6 +153,36 @@
 
             // Use debounce to limit requests
             $("#partLookupInput").on('input', debounce(lookupPart, 500)); // Adjust debounce time as needed
+
+
+            $(document).ready(function () {
+                $('.note-content').on('change', function () {
+                    var noteId = $(this).data('note-id');
+                    var noteContent = $(this).val();
+
+                    $.ajax({
+                        url: '@Url.Action("EditNoteLine", "Repairs")',
+                        type: 'POST',
+                        data: {
+                            noteId: noteId,
+                            noteContent: noteContent
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                console.log('Note updated successfully');
+                            } else {
+                                console.log('Error updating note: ' + response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('AJAX error: ' + error);
+                        }
+                    });
+                });
+            });
+
+
+
 
         });
 
@@ -303,6 +333,7 @@
                 }
             });
         }
+
 
         function deleteNoteLine(element, lineItemId) {
             console.log("Delete note line call:" + lineItemId);

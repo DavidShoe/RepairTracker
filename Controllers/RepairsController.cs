@@ -477,6 +477,29 @@ namespace RepairTracker.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> EditNoteLine(int noteId, string noteContent)
+        {
+            try
+            {
+                var note = await _context.RepairNotes.FindAsync(noteId);
+                if (note == null)
+                {
+                    return Json(new { success = false, message = "Note not found" });
+                }
+
+                note.Note = noteContent;
+                _context.Update(note);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
 
     }
 }
