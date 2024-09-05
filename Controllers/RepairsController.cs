@@ -415,7 +415,7 @@ namespace RepairTracker.Controllers
             try
             {
                 var repair = await _context.Repairs
-                    .Include(r => r.RepairParts)
+                    .Include(r => r.RepairNotes)
                     .FirstOrDefaultAsync(r => r.RepairId == repairId);
 
                 if (repair == null)
@@ -425,6 +425,9 @@ namespace RepairTracker.Controllers
 
                 // Add a new note
                 var note = new RepairNote(repairId);
+                note.TechnicianId = 1;
+                note.Note = "Add note content";
+                note.NoteDate = DateTime.Now;
                 repair.RepairNotes.Add(note);
                 _context.Update(repair);
 
@@ -435,6 +438,42 @@ namespace RepairTracker.Controllers
             catch (Exception e)
             {
                 return Json(new { success = false, message = e.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteNoteLine(int repairId, int noteId)
+        {
+            try
+            {
+                // Get the repair to remove the line from
+                var repair = await _context.Repairs
+                    .Include(r => r.RepairNotes)
+                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
+
+                if (repair == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                // Logic to delete the line item from the database
+                var noteToRemove = repair.RepairNotes.FirstOrDefault(rn => rn.RepairNoteId == noteId);
+                if (noteToRemove == null)
+                {
+                    return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                }
+
+                repair.RepairNotes.Remove(noteToRemove);
+
+                // save the change
+                await _context.SaveChangesAsync();
+
+                // Notify the caller that the delete was successful
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
         }
 

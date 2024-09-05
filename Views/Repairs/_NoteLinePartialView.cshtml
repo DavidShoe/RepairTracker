@@ -5,16 +5,17 @@
 
 @if (Model is not null)
 {
-    <tr>
-        <td class="cell" style="padding-top: 2px;">
-            <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deletePartLineItem(this, @Model.RepairNoteId);" />
+    <tr class="row">
+        <td class="col-md-1">
+            <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deleteNoteLine(this, @Model.RepairNoteId);" />
         </td>
 
-        <td>
+        <td class="col-md-2">
             @Model.NoteDate
         </td>
-        <td>
-            @Model.Note
+
+        <td class ="col-md-9">
+            @Html.EditorFor(model => model.Note, new { htmlAttributes = new { @class = "form-control note", @id = "note_" + index, @rows = "3" } })
         </td>
     </tr>
 }
