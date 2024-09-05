@@ -1,18 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RepairTracker.DBModels;
+using System.Configuration;
 using System.Diagnostics;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<GameRepairContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("RepairTrackerConnection") ?? throw new InvalidOperationException("Connection string 'RepairTrackerConnection' not found.")));
+var connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
 
+builder.Services.AddDbContext<GameRepairContext>(options =>
+    options.UseSqlServer(connectionString));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(
     options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
 );
+
 
 var app = builder.Build();
 
