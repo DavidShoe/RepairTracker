@@ -52,9 +52,15 @@
     </dl>
     <hr />
 
-    <form asp-action="Edit">
+    <form asp-action="SaveWork">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="RepairId" />
+        @Html.Hidden($"Repair.RepairId", Model.RepairId)
+        @Html.Hidden($"Repair.GameId", Model.GameId)
+        @Html.Hidden($"Repair.TechnicianId", Model.TechnicianId)
+        @Html.Hidden($"Repair.OwnerId", Model.OwnerId)
+        @Html.Hidden($"Repair.ReceivedDate", Model.ReceivedDate)
+        @Html.Hidden($"Repair.StartDate", Model.StartDate)
+        @Html.Hidden($"Repair.CustomerStates", Model.CustomerStates)
 
         <div>
             <h3>Parts used</h3>
@@ -115,9 +121,12 @@
         <hr />
 
         <div class="form-group">
-        <input type="submit" value="Save work and close" class="btn btn-primary col-mid-1" />
-        <div class="col-mid-5" />
-        <input type="submit" value="Finish Repair" class="btn btn-primary col-mid-1" />
+            <button id="SaveButton" type="submit" formaction="@Url.Action("SaveWork", "Repairs", new { repairId = Model.RepairId })" class="btn btn-success col-mid-1">Save & Close</button>
+
+@*         <input type="submit" value="Close" class="btn btn-primary col-mid-1" /> *@
+            <div class="col-mid-5" />   
+            <button id="processCartButton" class="col-mid-1" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { id = Model.RepairId })" onclick="return confirmProcess();" class="btn btn-success">Finish Repair</button>
+
         </div>
        
     </form>
@@ -359,6 +368,12 @@
                     alert("Error deleting note line: " + error);
                 }
             });
+
+            function confirmProcess() {
+                console.log("confirmFinish");
+                return confirm('Finish this repair?');
+            }
+
         }
 
     </script>

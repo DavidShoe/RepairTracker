@@ -500,6 +500,80 @@ namespace RepairTracker.Controllers
             }
         }
 
+        // POST: Repairs/SaveWork/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveWork(int repairId, Repair repair)
+        {
+            // notes are missing
+            if (repairId != repair.RepairId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(repair);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!RepairExists(repair.RepairId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(RepairsIndex));
+            }
+
+            return View(nameof(WorkOnRepair), repair);
+        }
+
+        // POST: Repairs/FinishRepair/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> FinishRepair(int repairId, [Bind("RepairNotes, RepairParts")] Repair repair)
+        {
+            if (repairId != repair.RepairId)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    repair.FinishedDate = DateOnly.FromDateTime(DateTime.Now);
+                    _context.Update(repair);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!RepairExists(repair.RepairId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(RepairsIndex));
+            }
+
+            return View(nameof(WorkOnRepair), repair);
+        }
+
 
     }
 }

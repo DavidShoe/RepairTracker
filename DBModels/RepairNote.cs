@@ -6,6 +6,9 @@ namespace RepairTracker.DBModels
 
     public partial class RepairNote
     {
+        public RepairNote()
+        {
+        }
         public RepairNote(int repairId)
         {
             RepairId = repairId;

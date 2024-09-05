@@ -15,12 +15,19 @@
         </td>
 
         <td class ="col-md-9">
-            @Html.EditorFor(model => model.Note, new { htmlAttributes = new {
+            <input type="text" asp-for="@Model.Note" class="form-control note note-content" id="note_@index" name="Repair.RepairNotes[@index].Note" value="@Model.Note" data_note_id="@Model.RepairNoteId" />
+
+@*             @Html.EditorFor(model => model.Note, new
+                {
+                    htmlAttributes = new
+                    {
                 @class = "form-control note note-content", 
                 @id = "note_" + index, 
                 @rows = "3", 
-                data_note_id = @Model.RepairNoteId 
-            } })
+                data_note_id = @Model.RepairNoteId ,
+                @name = "Repair.RepairNotes[" + index + "].Note"
+            } }) *@
         </td>
     </tr>
 }
+
