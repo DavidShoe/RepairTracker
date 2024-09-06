@@ -507,31 +507,65 @@ namespace RepairTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveWork(int repairId, Repair repair)
         {
-            // notes are missing
-            if (repairId != repair.RepairId)
+            try
             {
-                return NotFound();
-            }
+                // notes are missing
+                if (repairId != repair.RepairId)
+                {
+                    return NotFound();
+                }
 
-            if (ModelState.IsValid)
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        _context.Update(repair);
+
+                        // Update the parts
+                        foreach (var part in repair.RepairParts)
+                        {
+                            if (_context.Entry(part).State == EntityState.Detached)
+                            {
+                                _context.Add(part); // For new lines
+                            }
+                            else
+                            {
+                                _context.Update(part);
+                            }
+                        }
+
+                        // update the notes
+                        foreach (var note in repair.RepairNotes)
+                        {
+                            if (_context.Entry(note).State == EntityState.Detached)
+                            {
+                                _context.Add(note); // For new lines
+                            }
+                            else
+                            {
+                                _context.Update(note);
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!RepairExists(repair.RepairId))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(RepairsIndex));
+                }
+            }
+            catch (Exception e)
             {
-                try
-                {
-                    _context.Update(repair);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RepairExists(repair.RepairId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(RepairsIndex));
+                return Json(new { success = false, message = e.Message });
             }
 
             return View(nameof(WorkOnRepair), repair);
@@ -542,33 +576,68 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> FinishRepair(int repairId, [Bind("RepairNotes, RepairParts")] Repair repair)
+        public async Task<IActionResult> FinishRepair(int repairId, Repair repair)
         {
-            if (repairId != repair.RepairId)
+            try
             {
-                return NotFound();
-            }
+                // notes are missing
+                if (repairId != repair.RepairId)
+                {
+                    return NotFound();
+                }
 
-            if (ModelState.IsValid)
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        repair.FinishedDate = DateOnly.FromDateTime(DateTime.Now);
+                        _context.Update(repair);
+
+                        // Update the parts
+                        foreach (var part in repair.RepairParts)
+                        {
+                            if (_context.Entry(part).State == EntityState.Detached)
+                            {
+                                _context.Add(part); // For new lines
+                            }
+                            else
+                            {
+                                _context.Update(part);
+                            }
+                        }
+
+                        // update the notes
+                        foreach (var note in repair.RepairNotes)
+                        {
+                            if (_context.Entry(note).State == EntityState.Detached)
+                            {
+                                _context.Add(note); // For new lines
+                            }
+                            else
+                            {
+                                _context.Update(note);
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!RepairExists(repair.RepairId))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    return RedirectToAction(nameof(RepairsIndex));
+                }
+            }
+            catch (Exception e)
             {
-                try
-                {
-                    repair.FinishedDate = DateOnly.FromDateTime(DateTime.Now);
-                    _context.Update(repair);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RepairExists(repair.RepairId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(RepairsIndex));
+                return Json(new { success = false, message = e.Message });
             }
 
             return View(nameof(WorkOnRepair), repair);

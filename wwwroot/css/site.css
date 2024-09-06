@@ -24,3 +24,14 @@ body {
 .scaleDown {
     transform: scale(0.67);
 }
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}

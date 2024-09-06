@@ -5,6 +5,11 @@
 
 @if (Model is not null)
 {
+    @Html.Hidden($"Repair.RepairParts[{index}].RepairPartId", Model.RepairPartId)
+    @Html.Hidden($"Repair.RepairParts[{index}].RepairId", Model.RepairId)
+    @Html.Hidden($"Repair.RepairParts[{index}].PartId", Model.PartId)
+    @Html.Hidden($"Repair.RepairParts[{index}].Cost", Model.Cost)
+
     <tr>
         <td class="cell" style="padding-top: 2px;">
             <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deletePartLineItem(this, @Model.RepairPartId);" />
@@ -24,7 +29,7 @@
             <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
         </td>
 
-        <td id="lineTotal_@index">
+        <td id="lineTotal_@index" name="Repair.RepairParts[@index].Name">
             @Model.LineTotal
         </td>
     </tr>

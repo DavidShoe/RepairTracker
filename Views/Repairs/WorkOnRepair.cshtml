@@ -8,6 +8,7 @@
     ViewData["Title"] = "Work on repair";
 }
 
+<div>
 <h1>Work on repair: @Model.RepairId</h1>
 
 <div>
@@ -50,9 +51,12 @@
             @Html.DisplayFor(model => model.CustomerStates)
         </dd>
     </dl>
+</div>
+
     <hr />
 
-    <form asp-action="SaveWork">
+    <form method="post">
+    <div>
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         @Html.Hidden($"Repair.RepairId", Model.RepairId)
         @Html.Hidden($"Repair.GameId", Model.GameId)
@@ -94,9 +98,11 @@
                 <!-- Lookup results will be populated here -->
             </select>
         </div>
+    </div>
 
-        <hr />
+    <hr />
 
+    <div>
         <h3>Work performed</h3>
         <table class="table items-table" id="Notes">
             <thead>
@@ -115,26 +121,27 @@
             <tbody>
                     @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes)
             </tbody>
+            <tfoot>
+                <tr>
+                    <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
+                </tr>
+            </tfoot>
         </table>
-        <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
+    </div>
 
+    <hr />
+
+    <div class="flex-container">
+        <button id="SaveButton" class="flex-column" type="submit" formaction="@Url.Action("SaveWork", "Repairs", new { repairId = Model.RepairId })">Save & Close</button>
+            <button id="processCartButton" class="flex-column" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { repairId = Model.RepairId })" onclick="return confirmFinish();">Finish Repair</button>
+    </div>
+        <hr />
         <hr />
 
-        <div class="form-group">
-            <button id="SaveButton" type="submit" formaction="@Url.Action("SaveWork", "Repairs", new { repairId = Model.RepairId })" class="btn btn-success col-mid-1">Save & Close</button>
-
-@*         <input type="submit" value="Close" class="btn btn-primary col-mid-1" /> *@
-            <div class="col-mid-5" />   
-            <button id="processCartButton" class="col-mid-1" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { id = Model.RepairId })" onclick="return confirmProcess();" class="btn btn-success">Finish Repair</button>
-
-        </div>
-       
     </form>
+
 </div>
 
-<div>
-    <a asp-action="RepairsIndex">Back to List</a>
-</div>
 
 @section Scripts {
     @{
@@ -368,12 +375,11 @@
                     alert("Error deleting note line: " + error);
                 }
             });
+        }
 
-            function confirmProcess() {
-                console.log("confirmFinish");
-                return confirm('Finish this repair?');
-            }
-
+        function confirmFinish() {
+            console.log("confirmFinish");
+            return confirm('Finish this repair?');
         }
 
     </script>
