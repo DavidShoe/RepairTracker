@@ -5,12 +5,13 @@
 
 @if (Model is not null)
 {
-    @Html.Hidden($"Repair.RepairParts[{index}].RepairPartId", Model.RepairPartId)
-    @Html.Hidden($"Repair.RepairParts[{index}].RepairId", Model.RepairId)
-    @Html.Hidden($"Repair.RepairParts[{index}].PartId", Model.PartId)
-    @Html.Hidden($"Repair.RepairParts[{index}].Cost", Model.Cost)
+    <tr data-repairpartid = "@Model.RepairPartId">
+        @Html.Hidden($"Repair.RepairParts[{index}].RepairPartId", Model.RepairPartId)
+        @Html.Hidden($"Repair.RepairParts[{index}].RepairId", Model.RepairId)
+        @Html.Hidden($"Repair.RepairParts[{index}].PartId", Model.PartId)
+        @Html.Hidden($"Repair.RepairParts[{index}].Cost", Model.Cost)
+        @Html.Hidden($"Repair.RepairParts[{index}].LineTotal", Model.LineTotal)
 
-    <tr>
         <td class="cell" style="padding-top: 2px;">
             <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deletePartLineItem(this, @Model.RepairPartId);" />
         </td>

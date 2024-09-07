@@ -31,6 +31,20 @@ namespace RepairTracker.Controllers
             _context = context;
         }
 
+        private async Task<Repair?> LoadRepair(int repairId)
+        {
+            var repair = await _context.Repairs
+            .Include(r => r.Game)
+            .Include(r => r.Owner)
+            .Include(r => r.Technician)
+            .Include(Game => Game.RepairNotes)
+            .Include(Game => Game.RepairParts)
+            .ThenInclude(rp => rp.Part)
+            .FirstOrDefaultAsync(m => m.RepairId == repairId);
+
+            return repair;
+        }
+
         // GET: Repairs
         public IActionResult RepairsIndex()
         {
@@ -54,20 +68,9 @@ namespace RepairTracker.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WorkOnRepair(int? id)
+        public async Task<IActionResult> WorkOnRepair(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var repair = await _context.Repairs
-                .Include(r => r.Game)
-                .Include(r => r.Owner)
-                .Include(r => r.Technician)
-                .Include(Game => Game.RepairNotes)
-                .Include(Game => Game.RepairParts)
-                .FirstOrDefaultAsync(m => m.RepairId == id);
+            var repair = await LoadRepair(id);
             if (repair == null)
             {
                 return NotFound();
@@ -79,15 +82,9 @@ namespace RepairTracker.Controllers
         }
 
         // GET: Repairs/Start/5
-        public async Task<IActionResult> Start(int? id)
+        public async Task<IActionResult> Start(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var repair = await _context.Repairs
-                .FirstOrDefaultAsync(m => m.RepairId == id);
+            var repair = await LoadRepair(id);
             if (repair == null)
             {
                 return NotFound();
@@ -106,18 +103,9 @@ namespace RepairTracker.Controllers
 
 
         // GET: Repairs/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var repair = await _context.Repairs
-                .Include(r => r.Game)
-                .Include(r => r.Owner)
-                .Include(r => r.Technician)
-                .FirstOrDefaultAsync(m => m.RepairId == id);
+            var repair = await LoadRepair(id);
             if (repair == null)
             {
                 return NotFound();
@@ -263,42 +251,6 @@ namespace RepairTracker.Controllers
             return View(repair);
         }
 
-        // GET: Repairs/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var repair = await _context.Repairs
-                .Include(r => r.Game)
-                .Include(r => r.Owner)
-                .Include(r => r.Technician)
-                .FirstOrDefaultAsync(m => m.RepairId == id);
-            if (repair == null)
-            {
-                return NotFound();
-            }
-
-            return View(repair);
-        }
-
-        // POST: Repairs/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var repair = await _context.Repairs.FindAsync(id);
-            if (repair != null)
-            {
-                _context.Repairs.Remove(repair);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(RepairsIndex));
-        }
-
         private bool RepairExists(int id)
         {
             return _context.Repairs.Any(e => e.RepairId == id);
@@ -331,10 +283,7 @@ namespace RepairTracker.Controllers
         {
             try
             {
-                var repair = await _context.Repairs
-                    .Include(r => r.RepairParts)
-                    .ThenInclude(rp => rp.Part)
-                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
+                var repair = await LoadRepair(repairId);
 
                 if (repair == null)
                 {
@@ -352,6 +301,7 @@ namespace RepairTracker.Controllers
                 {
                     // part is not on the repair yet, add it
                     var repairPart = new RepairPart(repairId, quantity, part);
+                    repairPart.LineTotal = quantity * part.Sale;
                     repair.RepairParts.Add(repairPart);
                     _context.Update(part);
                 }
@@ -359,6 +309,7 @@ namespace RepairTracker.Controllers
                 {
                     // part is already on the repair, update the quantity
                     existingPart.Quantity += 1;
+                    existingPart.LineTotal = existingPart.Quantity * existingPart.Sale;
                     _context.Update(existingPart);
                 }
 
@@ -368,7 +319,7 @@ namespace RepairTracker.Controllers
             }
             catch (Exception e)
             {
-                return Json(new { success = false, message = e.Message });
+                return Json(new { success = false, message = "Error what?" + e.Message });
             }
         }
 
@@ -379,10 +330,7 @@ namespace RepairTracker.Controllers
             try
             {
                 // Get the repair to remove the line from
-                var repair = await _context.Repairs
-                    .Include(r => r.RepairParts)
-                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
-
+                var repair = await LoadRepair(repairId);
                 if (repair == null)
                 {
                     return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
@@ -414,10 +362,7 @@ namespace RepairTracker.Controllers
         {
             try
             {
-                var repair = await _context.Repairs
-                    .Include(r => r.RepairNotes)
-                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
-
+                var repair = await LoadRepair(repairId);
                 if (repair == null)
                 {
                     return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
@@ -447,10 +392,7 @@ namespace RepairTracker.Controllers
             try
             {
                 // Get the repair to remove the line from
-                var repair = await _context.Repairs
-                    .Include(r => r.RepairNotes)
-                    .FirstOrDefaultAsync(r => r.RepairId == repairId);
-
+                var repair = await LoadRepair(repairId);
                 if (repair == null)
                 {
                     return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
@@ -476,6 +418,33 @@ namespace RepairTracker.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+        
+        [HttpPost]
+        public async Task<IActionResult> EditPartLine(int repairPartId, decimal sale, int quantity)
+        {
+            try
+            {
+                var part = await _context.RepairParts.FindAsync(repairPartId);
+                if (part == null)
+                {
+                    return Json(new { success = false, message = "Note not found" });
+                }
+
+                part.Quantity = quantity;
+                part.Sale = sale;
+                part.LineTotal = sale * quantity;
+
+                _context.Update(part);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, total = part.LineTotal });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> EditNoteLine(int noteId, string noteContent)

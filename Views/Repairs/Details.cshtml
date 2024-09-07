@@ -1,73 +1,11 @@
 ﻿@model RepairTracker.DBModels.Repair
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Review Repair";
 }
-
-<h1>Details</h1>
-<div style="margin-left: 5px;">
-    <table class="table">
-        <colgroup>
-            <col span="1" style="width: 5%;">
-        </colgroup>
-        <tbody>
-            <tr>
-                <td> Game:</td>
-                <td>@ViewBag.GameName</td>
-            </tr>
-            <tr>
-                <td>Owner:</td>
-                <td>@ViewBag.OwnerName</td>
-            </tr>
-            <tr>
-                <td>Tech:</td>
-                <td>@ViewBag.TechnicianName</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
 <div>
-    <h4>Repair</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FinishedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FinishedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ReceivedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ReceivedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Game)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Game.GameId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Owner)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Owner.OwnerId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Technician)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Technician.TechnicianId)
-        </dd>
-    </dl>
+    <h1>Review on repair: @Model.RepairId</h1>
+    @await Html.PartialAsync("_RepairHeaderPartialView", Model)
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.RepairId">Edit</a> |

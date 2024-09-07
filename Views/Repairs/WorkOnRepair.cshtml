@@ -10,48 +10,7 @@
 
 <div>
 <h1>Work on repair: @Model.RepairId</h1>
-
-<div>
-    <h3>Details</h3>
-    <dl class="row">
-        <dt class="col-md-2 right-aligned-text">
-            @Html.DisplayNameFor(model => model.Game.GameName)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.Game.GameName)
-        </dd>
-        <dt class="col-md-2 right-aligned-text">
-            @Html.DisplayNameFor(model => model.Technician.TechnicianName)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.Technician.TechnicianName)
-        </dd>
-        <dt class="col-md-2 right-aligned-text">
-            @Html.DisplayNameFor(model => model.Owner.OwnerName)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.Owner.OwnerName)
-        </dd>
-        <dt class="col-md-2 right-aligned-text">
-            @Html.DisplayNameFor(model => model.ReceivedDate)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.ReceivedDate)
-        </dd>
-        <dt class="col-md-2 right-aligned-text">
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
-        <dd class="col-md-10">
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
-        <dt class="col-md-2 right-aligned-text">
-            @Html.DisplayNameFor(model => model.CustomerStates)
-        </dt>
-        <dd class="col-md-11">
-            @Html.DisplayFor(model => model.CustomerStates)
-        </dd>
-    </dl>
-</div>
+    @await Html.PartialAsync("_RepairHeaderPartialView", Model)
 
     <hr />
 
@@ -68,7 +27,7 @@
 
         <div>
             <h3>Parts used</h3>
-            <table class="table items-table" id="PartsUsed">
+            <table class="table items-table" id="partsUsed">
                 <thead>
                     <tr>
                         <th>Delete</th>
@@ -86,15 +45,16 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody id="partsUsedContainer">
+                <tbody>
                     @await Html.PartialAsync("_PartsUsedTablePartialView", Model.RepairParts)
                 </tbody>
             </table>
+
             <!-- Item Lookup Input in the middle -->
             <input type="text" id="partLookupInput" class="form-control" placeholder="Enter Part" autocomplete="off" style="height: 50;">
 
             <!-- Lookup Results ListBox -->
-            <select id="partLookupResults" class="form-control" size="5" style="overflow-y: auto;">
+            <select id="partLookupResults" class="form-control" size="3" style="overflow-y: auto;">
                 <!-- Lookup results will be populated here -->
             </select>
         </div>
@@ -103,7 +63,11 @@
     <hr />
 
     <div>
-        <h3>Work performed</h3>
+        <div>
+                <h3>Work performed</h3>
+                <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
+        </div>
+
         <table class="table items-table" id="Notes">
             <thead>
                 <tr class="row">
@@ -119,13 +83,8 @@
                 </tr>
             </thead>
             <tbody>
-                    @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes)
+                @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes)
             </tbody>
-            <tfoot>
-                <tr>
-                    <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
-                </tr>
-            </tfoot>
         </table>
     </div>
 
@@ -133,7 +92,7 @@
 
     <div class="flex-container">
         <button id="SaveButton" class="flex-column" type="submit" formaction="@Url.Action("SaveWork", "Repairs", new { repairId = Model.RepairId })">Save & Close</button>
-            <button id="processCartButton" class="flex-column" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { repairId = Model.RepairId })" onclick="return confirmFinish();">Finish Repair</button>
+        <button id="processCartButton" class="flex-column" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { repairId = Model.RepairId })" onclick="return confirmFinish();">Finish Repair</button>
     </div>
         <hr />
         <hr />
@@ -151,13 +110,6 @@
     <script>
         $(document).ready(function () {
 
-            // Event delegation for dynamically added line items
-            $("#PartsUsed tbody").on("input", ".qty, .sale", function () {
-                console.log("Change handler");
-                var index = $(this).closest('tr').index();
-                updateLineTotal(index);
-            });
-
             $("#partLookupResults").click(function () {
                 console.log("Part Lookup results click event fired");
                 event.preventDefault(); // we want to refresh in place as the model hasn't changed.
@@ -170,7 +122,43 @@
             // Use debounce to limit requests
             $("#partLookupInput").on('input', debounce(lookupPart, 500)); // Adjust debounce time as needed
 
+            // change handler for part lines
+            $(document).ready(function () {
+                $("#partsUsed tbody").on("input", ".qty, .sale", function () {
+                    var element = $(this).closest('tr');
+                    var data = element.data();
+                    console.log(data);
+                    var repairPartId = data.repairpartid;
 
+                    var index = $(this).closest('tr').index();
+                    const qty = parseFloat(document.getElementById('qty_' + index).value) || 0;
+                    const salePrice = parseFloat(document.getElementById('sale_' + index).value) || 0;
+                    const lineTotal = qty * salePrice;
+
+                    $.ajax({
+                        url: '@Url.Action("EditPartLine", "Repairs")',
+                        type: 'POST',
+                        data: {
+                            repairPartId: repairPartId,
+                            sale: salePrice,
+                            quantity: qty
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                console.log('Note updated successfully');
+                                document.getElementById('lineTotal_' + index).innerText = response.total.toFixed(2);
+                            } else {
+                                console.log('Error updating note: ' + response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('AJAX error: ' + error);
+                        }
+                    });
+                });
+            });
+
+            // change handler for note lines
             $(document).ready(function () {
                 $('.note-content').on('change', function () {
                     var noteId = $(this).data('note-id');
@@ -202,22 +190,6 @@
 
         });
 
-        // Function to recalculate the line total
-        function updateLineTotal(index) {
-            console.log("update line total: " + index);
-            const qty = parseFloat(document.getElementById('qty_' + index).value) || 0;
-            const costPrice = parseFloat(document.getElementById('sale_' + index).value) || 0;
-            const lineTotal = qty * costPrice;
-            console.log("qty " + qty + " costPrice " + costPrice + " lineTotal " + lineTotal);
-            document.getElementById('lineTotal_' + index).innerText = lineTotal.toFixed(2);
-//            updateTotals();
-        }
-
-        function UpdateTotals() { 
-        
-        }
-
-
         function addPartLineItem(selectedPartId) {
             console.log("Add line item call:" + selectedPartId);
             $.ajax({
@@ -234,10 +206,8 @@
                 success: function (response) {
                     console.log("Add line item call success:" + selectedPartId);
                     // Assuming the response is the HTML of the new line item table
-                    var li = $("#PartsUsed tbody");
+                    var li = $("#partsUsed tbody");
                     li.html(response);
-
-                    //updateTotals(); // Update totals, implement this function as needed
                 },
                 error: function (xhr, status, error) {
                     // Handle error
@@ -251,14 +221,22 @@
             console.log("Lookup item call");
             var query = $("#partLookupInput").val();
             if (query.length >= 2) { // Only search if query length is 2 or more characters
+
+                // Clear existing options
+                $("#partLookupResults").empty();
+                $("#partLookupResults").append($('<option>', {
+                    text: "No items found"
+                }));
+
                 $.ajax({
                     url: '@Url.Action("LookupPart", "Repairs")',
                     type: 'GET',
                     data: { query: query },
                     success: function (result) {
-                        // Clear existing options
-                        $("#lookupResults").empty();
                         if (result.success && result.items.length > 0) {
+                            // Clear existing options
+                            $("#partLookupResults").empty();
+
                             // Populate the listbox with the lookup results
                             result.items.forEach(function (item) {
                                 $("#partLookupResults").append($('<option>',
@@ -268,11 +246,6 @@
                                     }
                                 ));
                             });
-                        } else {
-                            // Handle no results or failure
-                            $("#partLookupResults").append($('<option>', {
-                                text: "No items found"
-                            }));
                         }
                     },
                     error: function (xhr, status, error) {
