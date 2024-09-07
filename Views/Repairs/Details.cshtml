@@ -7,7 +7,56 @@
     <h1>Review on repair: @Model.RepairId</h1>
     @await Html.PartialAsync("_RepairHeaderPartialView", Model)
 </div>
+<hr />
+
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.RepairId">Edit</a> |
-    <a asp-action="RepairsIndex">Back to List</a>
+    <div>
+        <h3>Work performed</h3>
+    </div>
+
+    <table class="table items-table" id="Notes">
+        <thead>
+            <tr class="row">
+                <th class="col-md-2">
+                    Work Date
+                </th>
+                <th class="col-md-8">
+                    Work Description
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes)
+        </tbody>
+    </table>
 </div>
+
+<hr />
+
+<div>
+    <h3>Parts used</h3>
+    <table class="table items-table" id="partsUsed">
+        <thead>
+            <tr>
+                <th>
+                    Part
+                </th>
+                <th>
+                    Sale $
+                </th>
+                <th>
+                    Quantity
+                </th>
+                <th>
+                    Line Total$
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @await Html.PartialAsync("_PartsUsedTablePartialView", Model.RepairParts)
+        </tbody>
+    </table>
+</div>
+
+
+<a asp-action="RepairsIndex">Back to Repair Index</a>

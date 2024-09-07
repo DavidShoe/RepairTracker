@@ -6,7 +6,9 @@
 
 @{
     ViewData["Title"] = "Work on repair";
+    bool isReview = ViewData["IsReview"] as bool? ?? false;
 }
+
 
 <div>
 <h1>Work on repair: @Model.RepairId</h1>
@@ -24,6 +26,32 @@
         @Html.Hidden($"Repair.ReceivedDate", Model.ReceivedDate)
         @Html.Hidden($"Repair.StartDate", Model.StartDate)
         @Html.Hidden($"Repair.CustomerStates", Model.CustomerStates)
+
+        <div>
+            <div>
+                <h3>Work performed</h3>
+                <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
+            </div>
+
+            <table class="table items-table" id="Notes">
+                <thead>
+                    <tr class="row">
+                        <th class="col-md-1">
+                            Delete
+                        </th>
+                        <th class="col-md-2">
+                            Work Date
+                        </th>
+                        <th class="col-md-8">
+                            Work Description
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes, new ViewDataDictionary(ViewData) { { "isReview", isReview } })
+                </tbody>
+            </table>
+        </div>
 
         <div>
             <h3>Parts used</h3>
@@ -46,7 +74,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @await Html.PartialAsync("_PartsUsedTablePartialView", Model.RepairParts)
+                        @await Html.PartialAsync("_PartsUsedTablePartialView", Model.RepairParts, new ViewDataDictionary(ViewData) { { "isReview", isReview } })
                 </tbody>
             </table>
 
@@ -62,40 +90,10 @@
 
     <hr />
 
-    <div>
-        <div>
-                <h3>Work performed</h3>
-                <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
-        </div>
-
-        <table class="table items-table" id="Notes">
-            <thead>
-                <tr class="row">
-                    <th class="col-md-1">
-                        Delete
-                    </th>
-                    <th class="col-md-2">
-                        Work Date
-                    </th>
-                    <th class="col-md-8">
-                        Work Description
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes)
-            </tbody>
-        </table>
-    </div>
-
-    <hr />
-
     <div class="flex-container">
         <button id="SaveButton" class="flex-column" type="submit" formaction="@Url.Action("SaveWork", "Repairs", new { repairId = Model.RepairId })">Save & Close</button>
         <button id="processCartButton" class="flex-column" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { repairId = Model.RepairId })" onclick="return confirmFinish();">Finish Repair</button>
     </div>
-        <hr />
-        <hr />
 
     </form>
 

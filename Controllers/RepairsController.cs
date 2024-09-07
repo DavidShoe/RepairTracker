@@ -111,6 +111,8 @@ namespace RepairTracker.Controllers
                 return NotFound();
             }
 
+            ViewData["IsReview"] = true;
+
             return View(repair);
         }
 

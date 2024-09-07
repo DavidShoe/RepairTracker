@@ -1,26 +1,40 @@
 ﻿@model RepairTracker.DBModels.RepairNote
 @{
     int index = ViewData["Index"] as int? ?? 0;
+    bool isReview = ViewData["IsReview"] as bool? ?? false;
 }
 
 @if (Model is not null)
 {
-    @Html.Hidden($"Repair.RepairNotes[{index}].RepairId", Model.RepairId)
-    @Html.Hidden($"Repair.RepairNotes[{index}].RepairNoteId", Model.RepairNoteId)
-    @Html.Hidden($"Repair.RepairNotes[{index}].NoteDate", Model.NoteDate)
-    @Html.Hidden($"Repair.RepairNotes[{index}].TechnicianId", Model.TechnicianId)
+    @if (!isReview)
+    {
+        @Html.Hidden($"Repair.RepairNotes[{index}].RepairId", Model.RepairId)
+        @Html.Hidden($"Repair.RepairNotes[{index}].RepairNoteId", Model.RepairNoteId)
+        @Html.Hidden($"Repair.RepairNotes[{index}].NoteDate", Model.NoteDate)
+        @Html.Hidden($"Repair.RepairNotes[{index}].TechnicianId", Model.TechnicianId)
+    }
 
     <tr class="row">
-        <td class="col-md-1">
-            <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deleteNoteLine(this, @Model.RepairNoteId);" />
-        </td>
+        @if (!isReview)
+        {
+            <td class="col-md-1">
+                <input type="button" value="X" class="btn btn-danger scaleDown" onclick="deleteNoteLine(this, @Model.RepairNoteId);" />
+            </td>
+        }
 
         <td class="col-md-2">
             @Model.NoteDate
         </td>
 
         <td class ="col-md-9">
-            <input type="text" asp-for="@Model.Note" class="form-control note note-content" id="note_@index" name="Repair.RepairNotes[@index].Note" value="@Model.Note" data_note_id="@Model.RepairNoteId" />
+            @if (isReview)
+            {
+                @Model.Note
+            }
+            else
+            {
+                <input type="text" asp-for="@Model.Note" class="form-control note note-content" id="note_@index" name="Repair.RepairNotes[@index].Note" value="@Model.Note" data_note_id="@Model.RepairNoteId" />
+            }
         </td>
     </tr>
 }
