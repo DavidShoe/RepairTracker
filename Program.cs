@@ -11,6 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
 
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Try the azure connection environment variable
+    connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
+}
+
 builder.Services.AddDbContext<GameRepairContext>(options =>
     options.UseSqlServer(connectionString));
 
