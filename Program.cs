@@ -5,16 +5,28 @@ using RepairTracker.DBModels;
 using System.Configuration;
 using System.Diagnostics;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = "";
 
-var connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
-
-if (string.IsNullOrEmpty(connectionString))
+// Check if the environment is Production
+if (builder.Environment.IsProduction())
 {
     // Try the azure connection environment variable
     connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
+    }
+}
+else
+{
+    connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("Local secret is not set.");
+    }
 }
 
 builder.Services.AddDbContext<GameRepairContext>(options =>
@@ -25,7 +37,6 @@ builder.Services.AddControllersWithViews(
     options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
 );
 
-
 var app = builder.Build();
 
 // Test our data connection context
@@ -34,14 +45,12 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
 
     using (var context = new GameRepairContext(
-            services.GetRequiredService<
-                DbContextOptions<GameRepairContext>>()))
+            services.GetRequiredService<DbContextOptions<GameRepairContext>>()))
     {
         // Look for any data
         if (context.Parts.Any())
         {
             Debug.WriteLine("Found data");
-
         }
         else
         {

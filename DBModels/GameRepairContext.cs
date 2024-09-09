@@ -33,20 +33,6 @@ namespace RepairTracker.DBModels
 
         public virtual DbSet<WallTime> WallTimes { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-
-                        var builder = WebApplication.CreateBuilder();
-            var connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                // Try the azure connection environment variable
-                connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
-            }
-
-            optionsBuilder.UseSqlServer(connectionString);
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Category>(entity =>
