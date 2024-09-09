@@ -6,6 +6,10 @@ using System.Configuration;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add logging services
+builder.Logging.AddConsole();
+
 var connectionString = "";
 
 // Check if the environment is Production
@@ -16,6 +20,11 @@ if (builder.Environment.IsProduction())
 
     if (string.IsNullOrEmpty(connectionString))
     {
+        // Obtain the logger factory from the service provider
+        using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
+        var logger = loggerFactory.CreateLogger<Program>();
+
+        logger.LogError("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
         throw new InvalidOperationException("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
     }
 }
