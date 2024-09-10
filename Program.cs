@@ -39,6 +39,10 @@ internal class Program
             {
                 connectionString = app.Configuration["AZURESQLCONNECTIONSTRING"];
             }
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = app.Configuration.GetConnectionString("AZURESQLCONNECTIONSTRING");
+            }
 
             if (string.IsNullOrEmpty(connectionString))
             {
