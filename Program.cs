@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Options;
 using RepairTracker.DBModels;
 using System.Collections;
@@ -24,9 +25,19 @@ internal class Program
         builder.Configuration.AddEnvironmentVariables();
 
         // Add logging services
-        builder.Logging.ClearProviders();
+  
         builder.Logging.AddConsole();
 
+        // Obtain the logger factory from the service provider
+        using var loggerFactory = LoggerFactory.Create(loggingBuilder =>
+        {
+            loggingBuilder.ClearProviders();
+            loggingBuilder.AddConsole();
+            loggingBuilder.AddDebug();
+            loggingBuilder.AddConfiguration();
+            loggingBuilder.SetMinimumLevel(LogLevel.Debug);
+        });
+        var logger = loggerFactory.CreateLogger<Program>();
         var connectionString = "";
 
         WebApplication? app = null;
@@ -34,23 +45,23 @@ internal class Program
         // Check if the environment is Production
         if (builder.Environment.IsProduction())
         {
-            app = builder.Build();
+            logger.LogDebug("I am in production");
+
+            logger.LogDebug("reading GetEnvironmentVariable...");
             // Try the azure connection environment variable
             connectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_AZURE_SQL_CONNECTIONSTRING")!;
             if (string.IsNullOrEmpty(connectionString))
             {
-                connectionString = app.Configuration["AZURESQLCONNECTIONSTRING"];
+                connectionString = builder.Configuration["AZURESQLCONNECTIONSTRING"];
             }
             if (string.IsNullOrEmpty(connectionString))
             {
-                connectionString = app.Configuration.GetConnectionString("AZURESQLCONNECTIONSTRING");
+                connectionString = builder.Configuration.GetConnectionString("AZURESQLCONNECTIONSTRING");
             }
 
             if (string.IsNullOrEmpty(connectionString))
             {
                 // Obtain the logger factory from the service provider
-                using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
-                var logger = loggerFactory.CreateLogger<Program>();
 
                 logger.LogError("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
 
@@ -63,8 +74,6 @@ internal class Program
         else
         {
             // Obtain the logger factory from the service provider
-            using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
-            var logger = loggerFactory.CreateLogger<Program>();
 
             logger.LogError("# Environmental Variables \r\n");
             DumpAllEnvVariables(logger, Environment.GetEnvironmentVariables());
