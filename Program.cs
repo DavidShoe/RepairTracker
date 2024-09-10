@@ -22,18 +22,23 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddEnvironmentVariables();
-
+    
         // Add logging services
         builder.Logging.AddConsole();
 
         var connectionString = "";
 
+        var app = builder.Build();
+
         // Check if the environment is Production
-        if (builder.Environment.IsProduction())
+        if (app.Environment.IsProduction())
         {
             // Try the azure connection environment variable
-//            connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
-            connectionString = builder.Configuration["AZURE_SQL_CONNECTIONSTRING"];
+            connectionString = Environment.GetEnvironmentVariable("AZURESQLCONNECTIONSTRING")!;
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = app.Configuration["AZURESQLCONNECTIONSTRING"];
+            }
 
             if (string.IsNullOrEmpty(connectionString))
             {
@@ -51,7 +56,7 @@ internal class Program
         }
         else
         {
-            connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
+            connectionString = app.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
 
             if (string.IsNullOrEmpty(connectionString))
             {
@@ -66,8 +71,6 @@ internal class Program
         builder.Services.AddControllersWithViews(
             options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
         );
-
-        var app = builder.Build();
 
         // Test our data connection context
         using (var scope = app.Services.CreateScope())
