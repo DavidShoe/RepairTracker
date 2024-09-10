@@ -83,7 +83,8 @@ internal class Program
         else
         {
             logger.LogDebug("I am in development");
-            connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
+            connectionString = builder.Configuration["RepairTracker:ConnectionStrings:DevAzureConnection"];
+            //connectionString = builder.Configuration["RepairTracker:ConnectionStrings:ProdAzureConnection"];
 
             if (string.IsNullOrEmpty(connectionString))
             {

@@ -85,7 +85,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OwnerId,OwnerName,ContactInfo")] Owner owner)
+        public async Task<IActionResult> Edit(int id, [Bind("OwnerId,OwnerName,Password,UserName,Street,City,State,Zip,Email,Phone")] Owner owner)
         {
             if (id != owner.OwnerId)
             {

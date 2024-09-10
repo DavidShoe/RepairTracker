@@ -4,5 +4,69 @@
 
 <div class="text-center">
     <h1 class="display-4">Room Of Doom</h1>
-    <p>Repair backlog: ???</p>
+    <p class="lead">Welcome to the Room of Doom, where you can manage your repair backlog.</p>
 </div>
+
+<div class="text-center">
+    <h2>Login</h2>
+    <form id="loginForm" method="post">
+        <div class="form-group">
+            <label for="userType">I am a:</label>
+            <select id="userType" class="form-control" onchange="toggleLoginFields()">
+                <option value="">Select...</option>
+                <option value="technician">Technician</option>
+                <option value="customer">Customer</option>
+            </select>
+        </div>
+        <div id="technicianFields" style="display:none;">
+            <div class="form-group">
+                <label for="technicianName">Technician Name</label>
+                <input type="text" id="techName" name="techName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="technicianPassword">Password</label>
+                <input type="password" id="password" name="password" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" formaction="/Home/LoginTech" value="Tech Login" class="btn btn-primary" />
+            </div>
+
+        </div>
+        <div id="customerFields" style="display:none;">
+            <div class="form-group">
+                <label for="customerLogin">Customer Login</label>
+                <input type="text" id="userName" name="userName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="technicianPassword">Password</label>
+                <input type="password" id="userPassword" name="userPassword" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <input type="submit" formaction="/Home/LoginOwner" value="User Login" class="btn btn-primary" />
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleLoginFields() {
+            var userType = document.getElementById("userType").value;
+            var technicianFields = document.getElementById("technicianFields");
+            var customerFields = document.getElementById("customerFields");
+
+            if (userType === "technician") {
+                technicianFields.style.display = "block";
+                customerFields.style.display = "none";
+            } else if (userType === "customer") {
+                technicianFields.style.display = "none";
+                customerFields.style.display = "block";
+            } else {
+                technicianFields.style.display = "none";
+                customerFields.style.display = "none";
+            }
+        }
+    </script>
+}

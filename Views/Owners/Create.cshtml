@@ -1,38 +1,113 @@
 ﻿@model RepairTracker.DBModels.Owner
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Owner Create";
 }
 
-<h1>Create</h1>
+<h1>Create new Owner</h1>
 
-<h4>Owner</h4>
+
 <hr />
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
+    <div class="col-md-12">
+        <form asp-action="OwnerEdit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="OwnerName" class="control-label"></label>
-                <input asp-for="OwnerName" class="form-control" />
-                <span asp-validation-for="OwnerName" class="text-danger"></span>
+            <input type="hidden" asp-for="OwnerId" />
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="OwnerName" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="OwnerName" class="form-control" />
+                    <span asp-validation-for="OwnerName" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="ContactInfo" class="control-label"></label>
-                <input asp-for="ContactInfo" class="form-control" />
-                <span asp-validation-for="ContactInfo" class="text-danger"></span>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="Password" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
             </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="UserName" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="UserName" class="form-control" />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="Street" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="Street" class="form-control" />
+                    <span asp-validation-for="Street" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="City" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="City" class="form-control" />
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="State" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="State" class="form-control" />
+                    <span asp-validation-for="State" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="Zip" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="Zip" class="form-control" />
+                    <span asp-validation-for="Zip" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="Email" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-2 text-right">
+                    <label asp-for="Phone" class="control-label"></label>
+                </div>
+                <div class="col-md-10">
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+            </div>
+            <hr />
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
+<hr />
 <div>
-    <a asp-action="OwnersIndex">Back to List</a>
+    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

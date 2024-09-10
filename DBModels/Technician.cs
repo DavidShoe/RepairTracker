@@ -14,6 +14,8 @@ namespace RepairTracker.DBModels
 
         public decimal HourlyRate { get; set; }
 
+        public string? Password { get; set; }
+
         public virtual ICollection<RepairNote> RepairNotes { get; set; } = new List<RepairNote>();
 
         public virtual ICollection<Repair> Repairs { get; set; } = new List<Repair>();
