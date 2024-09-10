@@ -9,12 +9,12 @@ using System.Diagnostics;
 internal class Program
 {
 
-    private async Task DumpAllEnvVariables(HttpContext context, IDictionary envVariables)
+    private static void DumpAllEnvVariables(ILogger<Program> logger, IDictionary envVariables)
     {
         foreach (var envVar in envVariables.Cast<DictionaryEntry>())
         {
-            await context.Response.WriteAsync($"{envVar.Key}"); // : {envVar.Value}
-            await context.Response.WriteAsync($"\r\n");
+            logger.LogError($"{envVar.Key}"); // : {envVar.Value}
+            logger.LogError($"\r\n");
         }
     }
 
@@ -22,17 +22,19 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddEnvironmentVariables();
-    
+
         // Add logging services
+        builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
 
         var connectionString = "";
 
-        var app = builder.Build();
+        WebApplication? app = null;
 
         // Check if the environment is Production
-        if (app.Environment.IsProduction())
+        if (builder.Environment.IsProduction())
         {
+            app = builder.Build();
             // Try the azure connection environment variable
             connectionString = Environment.GetEnvironmentVariable("AZURESQLCONNECTIONSTRING")!;
             if (string.IsNullOrEmpty(connectionString))
@@ -52,21 +54,31 @@ internal class Program
 
                 logger.LogError("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
 
-                //await context.Response.WriteAsync("# Environmental Variables \r\n");
-                //await DumpAllEnvVariables(context, Environment.GetEnvironmentVariables());
+                logger.LogError("# Environmental Variables \r\n");
+                DumpAllEnvVariables(logger, Environment.GetEnvironmentVariables());
 
                 throw new InvalidOperationException("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
             }
         }
         else
         {
-            connectionString = app.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
+            // Obtain the logger factory from the service provider
+            using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
+            var logger = loggerFactory.CreateLogger<Program>();
+
+            logger.LogError("# Environmental Variables \r\n");
+            DumpAllEnvVariables(logger, Environment.GetEnvironmentVariables());
+
+            connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
 
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new InvalidOperationException("Local secret is not set.");
             }
+
+
         }
+
 
         builder.Services.AddDbContext<GameRepairContext>(options =>
             options.UseSqlServer(connectionString));
@@ -75,6 +87,11 @@ internal class Program
         builder.Services.AddControllersWithViews(
             options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
         );
+
+        if (app is null)
+        {
+            app = builder.Build();
+        }
 
         // Test our data connection context
         using (var scope = app.Services.CreateScope())
