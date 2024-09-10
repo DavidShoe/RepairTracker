@@ -36,7 +36,7 @@ internal class Program
         {
             app = builder.Build();
             // Try the azure connection environment variable
-            connectionString = Environment.GetEnvironmentVariable("AZURESQLCONNECTIONSTRING")!;
+            connectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_AZURE_SQL_CONNECTIONSTRING")!;
             if (string.IsNullOrEmpty(connectionString))
             {
                 connectionString = app.Configuration["AZURESQLCONNECTIONSTRING"];
