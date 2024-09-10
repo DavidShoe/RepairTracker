@@ -108,6 +108,9 @@ namespace RepairTracker.DBModels
                 entity.Property(e => e.RepairPartId).HasColumnName("RepairPartID");
                 entity.Property(e => e.PartId).HasColumnName("PartId");
                 entity.Property(e => e.RepairId).HasColumnName("RepairId");
+                entity.Property(e => e.Cost).HasColumnType("decimal(7, 2)");
+                entity.Property(e => e.Sale).HasColumnType("decimal(7, 2)");
+                entity.Property(e => e.LineTotal).HasColumnType("decimal(7, 2)");
 
                 entity.HasOne(d => d.Part).WithMany(p => p.RepairParts).HasForeignKey(d => d.PartId);
 
