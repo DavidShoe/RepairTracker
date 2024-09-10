@@ -32,7 +32,8 @@ internal class Program
         if (builder.Environment.IsProduction())
         {
             // Try the azure connection environment variable
-            connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
+//            connectionString = Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING")!;
+            connectionString = builder.Configuration["AZURE_SQL_CONNECTIONSTRING"];
 
             if (string.IsNullOrEmpty(connectionString))
             {
