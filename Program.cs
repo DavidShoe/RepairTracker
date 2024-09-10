@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Configuration;
@@ -48,46 +49,47 @@ internal class Program
             logger.LogDebug("I am in production");
 
             logger.LogDebug("reading GetEnvironmentVariable...");
+
             // Try the azure connection environment variable
             connectionString = Environment.GetEnvironmentVariable("SQLAZURECONNSTR_AZURE_SQL_CONNECTIONSTRING")!;
             if (string.IsNullOrEmpty(connectionString))
             {
                 connectionString = builder.Configuration["AZURESQLCONNECTIONSTRING"];
             }
+            else
+            {
+                logger.Log(LogLevel.Information, "SQLAZURECONNSTR_AZURE_SQL_CONNECTIONSTRING found");
+            }
+
             if (string.IsNullOrEmpty(connectionString))
             {
                 connectionString = builder.Configuration.GetConnectionString("AZURESQLCONNECTIONSTRING");
             }
+            else
+            {
+                logger.Log(LogLevel.Information, " builder.Configuration.GetConnectionString AZURESQLCONNECTIONSTRING found");
+            }
 
             if (string.IsNullOrEmpty(connectionString))
             {
-                // Obtain the logger factory from the service provider
-
-                logger.LogError("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
+                logger.LogError("Unable to find a connection string.");
 
                 logger.LogError("# Environmental Variables \r\n");
                 DumpAllEnvVariables(logger, Environment.GetEnvironmentVariables());
 
-                throw new InvalidOperationException("AZURE_SQL_CONNECTIONSTRING environment variable is not set.");
+                throw new InvalidOperationException("Unable to find a connection string.");
             }
         }
         else
         {
-            // Obtain the logger factory from the service provider
-
-            logger.LogError("# Environmental Variables \r\n");
-            DumpAllEnvVariables(logger, Environment.GetEnvironmentVariables());
-
+            logger.LogDebug("I am in development");
             connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
 
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new InvalidOperationException("Local secret is not set.");
             }
-
-
         }
-
 
         builder.Services.AddDbContext<GameRepairContext>(options =>
             options.UseSqlServer(connectionString));
@@ -102,6 +104,10 @@ internal class Program
             app = builder.Build();
         }
 
+        // Log the server and database information
+        var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
+        logger.LogInformation($"Connecting to server: {connectionBuilder.DataSource}, database: {connectionBuilder.InitialCatalog}");
+
         // Test our data connection context
         using (var scope = app.Services.CreateScope())
         {
@@ -114,10 +120,12 @@ internal class Program
                 if (context.Parts.Any())
                 {
                     Debug.WriteLine("Found data");
+                    logger.LogDebug("Found data");
                 }
                 else
                 {
                     Debug.WriteLine("Not finding data");
+                    logger.LogDebug("Not finding data");
                 }
             }
         }
