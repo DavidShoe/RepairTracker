@@ -10,7 +10,6 @@ using System.Diagnostics;
 
 internal class Program
 {
-
     private static void DumpAllEnvVariables(ILogger<Program> logger, IDictionary envVariables)
     {
         foreach (var envVar in envVariables.Cast<DictionaryEntry>())
@@ -40,8 +39,6 @@ internal class Program
         });
         var logger = loggerFactory.CreateLogger<Program>();
         var connectionString = "";
-
-        WebApplication? app = null;
 
         // Check if the environment is Production
         if (builder.Environment.IsProduction())
@@ -98,12 +95,21 @@ internal class Program
         // Add services to the container.
         builder.Services.AddControllersWithViews(
             options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
-        );
+            );
 
-        if (app is null)
-        {
-            app = builder.Build();
-        }
+        // Add session support
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options => {
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            }
+        );
+        
+        // Register IHttpContextAccessor
+        builder.Services.AddHttpContextAccessor();
+
+        WebApplication app = builder.Build();
 
         // Log the server and database information
         var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
@@ -131,7 +137,6 @@ internal class Program
             }
         }
 
-
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
@@ -145,7 +150,10 @@ internal class Program
 
         app.UseRouting();
 
+        app.UseAuthentication();
         app.UseAuthorization();
+
+        app.UseSession(); // Add this line to enable session
 
         app.MapControllerRoute(
             name: "default",
