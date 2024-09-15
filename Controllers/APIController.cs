@@ -32,101 +32,91 @@ namespace RepairTracker.Controllers
         public async Task<IActionResult> LoginOwner(string userName, string userPassword)
         {
             Debug.WriteLine("APIController LoginOwner");
-            // Lookup the username
-            // If the username is found, check the password
-            // If the password is correct, redirect to the OwnersIndex page
-            // If the password is incorrect, return an error message
-            // If the username is not found, return an error message
 
             try
             {
-                if (userName == null)
+                if (string.IsNullOrEmpty(userName))
                 {
-                    return NotFound();
+                    return BadRequest("Username cannot be empty.");
                 }
 
                 var owner = await _context.Owners
                     .FirstOrDefaultAsync(m => m.UserName == userName);
                 if (owner == null)
                 {
-                    return NotFound();
+                    return BadRequest("Username not found.");
                 }
 
-                // trim the passwords
-                var p = string.Empty;
-                if (owner.Password is not null)
-                {
-                    p = owner.Password.Trim();
-                }
-
+                // Trim the passwords
+                var p = owner.Password?.Trim() ?? string.Empty;
                 var u = userPassword.Trim();
+
                 if (string.Compare(p, u) == 0)
                 {
+                    Debug.WriteLine("APIController LoginOwner: Passwords match");
                     HttpContext.Session.SetString("UserName", owner.UserName!);
                     HttpContext.Session.SetString("UserRole", "Owner");
-                    return RedirectToAction(nameof(OwnersController.OwnersIndex), "Owners");
+                    Debug.WriteLine($"Owner Username {owner.UserName} logged in.");
+                    var foo = HttpContext.Session.GetString("UserName");
+                    Debug.WriteLine($"Session: UserName: {foo}");
+
+                    return Json(new { redirectUrl = Url.Action(nameof(OwnersController.OwnersIndex), "Owners") });
                 }
                 else
                 {
-                    return NotFound();
+                    return BadRequest("Incorrect password.");
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error logging in owner");
-                return NotFound();
+                return StatusCode(500, "Internal server error. Please try again later.");
             }
         }
+
 
         public async Task<IActionResult> LoginTech(string techName, string password)
         {
             Debug.WriteLine("APIController LoginTech");
-            // Lookup the username
-            // If the username is found, check the password
-            // If the password is correct, redirect to the OwnersIndex page
-            // If the password is incorrect, return an error message
-            // If the username is not found, return an error message
 
             try
             {
-                if (techName == null)
+                if (string.IsNullOrEmpty(techName))
                 {
-                    return BadRequest("Username or password is incorrect (1)");
+                    return BadRequest("Technician name cannot be empty.");
                 }
 
                 var technician = await _context.Technicians
                     .FirstOrDefaultAsync(m => m.TechnicianName == techName);
                 if (technician == null)
                 {
-                    return BadRequest("Username or password is incorrect (2)");
+                    return BadRequest("Technician name not found.");
                 }
 
-                // trim the passwords
-                var p = string.Empty;
-                if (technician.Password is not null)
-                {
-                    p = technician.Password.Trim();
-                }
-
+                // Trim the passwords
+                var p = technician.Password?.Trim() ?? string.Empty;
                 var u = password.Trim();
+
                 if (string.Compare(p, u) == 0)
                 {
                     HttpContext.Session.SetString("UserName", technician.TechnicianName!);
                     HttpContext.Session.SetString("UserRole", "Technician");
-                    return RedirectToAction(nameof(RepairsController.RepairsIndex), "Repairs");
+                    Debug.WriteLine($"Tech Username {technician.TechnicianName} logged in.");
+                    var foo = HttpContext.Session.GetString("UserName");
+                    Debug.WriteLine($"Session: UserName: {foo}");
+                    return Json(new { redirectUrl = Url.Action(nameof(RepairsController.RepairsIndex), "Repairs") });
                 }
                 else
                 {
-                    return BadRequest("Username or password is incorrect (3)");
+                    return BadRequest("Incorrect password.");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error logging in owner");
-                return BadRequest("Username or password is incorrect (4)");
+                _logger.LogError(ex, "Error logging in technician");
+                return StatusCode(500, "Internal server error. Please try again later.");
             }
         }
-
 
 
 

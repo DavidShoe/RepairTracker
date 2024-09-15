@@ -100,6 +100,7 @@ internal class Program
         // Add session support
         builder.Services.AddDistributedMemoryCache();
         builder.Services.AddSession(options => {
+//            options.IdleTimeout = TimeSpan.FromSeconds(10);
             options.IdleTimeout = TimeSpan.FromMinutes(30);
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
@@ -153,7 +154,9 @@ internal class Program
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseSession(); // Add this line to enable session
+        app.UseSession();
+
+        app.UseMiddleware<SessionCheckMiddleware>(); // Use custom session check middleware
 
         app.MapControllerRoute(
             name: "default",

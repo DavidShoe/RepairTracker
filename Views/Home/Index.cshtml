@@ -1,11 +1,19 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var sessionExpired = Context.Request.Query["sessionExpired"].ToString();
 }
 
 <div class="text-center">
     <h1 class="display-4">Room Of Doom</h1>
     <p class="lead">Welcome to the Room of Doom, where you can manage your repair backlog.</p>
 </div>
+
+@if (!string.IsNullOrEmpty(sessionExpired) && sessionExpired == "true")
+{
+    <div class="alert alert-warning" role="alert">
+        Your session has expired. Please log in again.
+    </div>
+}
 
 <div class="text-center">
     <h2>Login</h2>
@@ -29,9 +37,8 @@
             </div>
 
             <div class="form-group">
-                <input type="submit" formaction="/API/LoginTech" value="Tech Login" class="btn btn-primary" />
+                <button type="button" onclick="login('/API/LoginTech')" class="btn btn-primary">Tech Login</button>
             </div>
-
         </div>
         <div id="customerFields" style="display:none;">
             <div class="form-group">
@@ -44,10 +51,11 @@
             </div>
 
             <div class="form-group">
-                <input type="submit" formaction="/API/LoginOwner" value="User Login" class="btn btn-primary" />
+                <button type="button" onclick="login('/API/LoginOwner')" class="btn btn-primary">User Login</button>
             </div>
         </div>
     </form>
+    <div id="errorMessage" class="text-danger" style="display:none;"></div>
 </div>
 
 @section Scripts {
@@ -67,6 +75,23 @@
                 technicianFields.style.display = "none";
                 customerFields.style.display = "none";
             }
+        }
+
+        function login(actionUrl) {
+            var formData = new FormData(document.getElementById("loginForm"));
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", actionUrl, true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    window.location.href = response.redirectUrl;
+                } else {
+                    var errorMessage = document.getElementById("errorMessage");
+                    errorMessage.innerText = xhr.responseText;
+                    errorMessage.style.display = "block";
+                }
+            };
+            xhr.send(formData);
         }
     </script>
 }
