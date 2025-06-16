@@ -7,6 +7,8 @@ using RepairTracker.DBModels;
 using System.Collections;
 using System.Configuration;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using RepairTracker.Areas.Identity.Data;
 
 internal class Program
 {
@@ -92,10 +94,21 @@ internal class Program
         builder.Services.AddDbContext<GameRepairContext>(options =>
             options.UseSqlServer(connectionString));
 
+        // Add Identity DbContext
+        builder.Services.AddDbContext<RepairTrackerIdentityContext>(options =>
+            options.UseSqlServer(connectionString));
+
+        // Add Identity services
+        builder.Services.AddDefaultIdentity<RepairTrackerUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<RepairTrackerIdentityContext>();
+
         // Add services to the container.
         builder.Services.AddControllersWithViews(
             options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
             );
+
+        builder.Services.AddRazorPages();
 
         // Add session support
         builder.Services.AddDistributedMemoryCache();
@@ -161,6 +174,8 @@ internal class Program
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
+
+        app.MapRazorPages();
 
         app.Run();
     }
