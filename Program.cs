@@ -166,9 +166,7 @@ internal class Program
 
         app.UseAuthentication();
         app.UseAuthorization();
-
         app.UseSession();
-
         app.UseMiddleware<SessionCheckMiddleware>(); // Use custom session check middleware
 
         app.MapControllerRoute(

@@ -1,4 +1,9 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@using RepairTracker.Areas.Identity.Data
+@inject SignInManager<RepairTrackerUser> SignInManager
+@inject UserManager<RepairTrackerUser> UserManager
+
+@{
     ViewData["Title"] = "Home Page";
     var sessionExpired = Context.Request.Query["sessionExpired"].ToString();
 }
@@ -16,6 +21,17 @@
 }
 
 <div class="text-center">
-    <h2>Login</h2>
-    <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login with your account</a>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <h2>Welcome, @UserManager.GetUserName(User)!</h2>
+        <a class="btn btn-secondary" asp-area="Identity" asp-page="/Account/Manage/Index">Manage Account</a>
+        <form asp-area="Identity" asp-page="/Account/Logout" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-link">Logout</button>
+        </form>
+    }
+    else
+    {
+        <h2>Login</h2>
+        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login with your account</a>
+    }
 </div>
