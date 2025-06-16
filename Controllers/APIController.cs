@@ -86,6 +86,11 @@ namespace RepairTracker.Controllers
                     return BadRequest("Technician name cannot be empty.");
                 }
 
+                if (string.IsNullOrEmpty(password))
+                {
+                    return BadRequest("Password cannot be empty.");
+                }
+
                 var technician = await _context.Technicians
                     .FirstOrDefaultAsync(m => m.TechnicianName == techName);
                 if (technician == null)
