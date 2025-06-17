@@ -32,14 +32,17 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Repairs" asp-action="RepairsIndex">Repairs</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Owners" asp-action="OwnersIndex">Owners</a>
-                        </li>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Tech"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Owners" asp-action="OwnersIndex">Owners</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Parts" asp-action="PartsIndex">Parts</a>
+                            </li>
+                        }
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Technicians" asp-action="TechIndex">Techs</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Parts" asp-action="PartsIndex">Parts</a>
                         </li>
                         @if (User.IsInRole("Admin"))
                         {

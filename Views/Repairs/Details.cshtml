@@ -1,4 +1,7 @@
-﻿@model RepairTracker.DBModels.Repair
+﻿@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize] // All authenticated users can access Repairs
+
+@model RepairTracker.DBModels.Repair
 
 @{
     ViewData["Title"] = "Review Repair";

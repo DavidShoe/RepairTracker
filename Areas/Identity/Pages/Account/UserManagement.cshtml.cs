@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RepairTracker;
 using RepairTracker.Areas.Identity.Data;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,9 +61,18 @@ public class UserManagementModel : PageModel
                 await _userManager.AddToRolesAsync(user, rolesToAdd);
 
             // Remove unchecked roles
-            var rolesToRemove = allRoles.Except(selectedRoles).Intersect(currentRoles).ToList();
-            if (rolesToRemove.Any())
-                await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+            List<string?> rolesToRemove = allRoles.Except(selectedRoles).Intersect(currentRoles).ToList();
+            List<string> roles = new List<string>();
+            foreach (var role in rolesToRemove)
+            {
+                if (role is not null) // Ensure role is not null before removing
+                {
+                    roles.Add(role);
+                }
+            }
+            if (roles.Any())
+                await _userManager.RemoveFromRolesAsync(user, roles);
+
         }
         return RedirectToPage();
     }

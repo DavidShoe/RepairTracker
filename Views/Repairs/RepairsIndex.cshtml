@@ -1,6 +1,7 @@
 ﻿@model RepairTracker.Controllers.RepairsViewModel
-
+@using Microsoft.AspNetCore.Authorization
 @using RepairTracker.Controllers
+@attribute [Authorize] // All authenticated users can access Repairs
 
 @{
     ViewData["Title"] = "Repairs Index";
