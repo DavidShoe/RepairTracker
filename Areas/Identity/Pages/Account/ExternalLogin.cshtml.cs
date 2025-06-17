@@ -116,6 +116,15 @@ namespace RepairTracker.Areas.Identity.Pages.Account
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
+                // Check if email is confirmed before allowing login
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if (user != null && !_userManager.IsEmailConfirmedAsync(user).GetAwaiter().GetResult())
+                {
+                    ErrorMessage = "You must confirm your email before you can log in.";
+
+                    await _signInManager.SignOutAsync();
+                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                }
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
                 return LocalRedirect(returnUrl);
             }

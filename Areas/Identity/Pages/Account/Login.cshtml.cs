@@ -110,6 +110,14 @@ namespace RepairTracker.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                // Check if user exists and is confirmed
+                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                if (user != null && !_signInManager.UserManager.IsEmailConfirmedAsync(user).GetAwaiter().GetResult())
+                {
+                    ModelState.AddModelError(string.Empty, "You must confirm your email before you can log in.");
+                    return Page();
+                }
+
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
