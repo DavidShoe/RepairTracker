@@ -16,6 +16,12 @@ namespace RepairTracker.DBModels
 
         public string? Password { get; set; }
 
+        // Link to ASP.NET Identity User
+        public string? IdentityUserId { get; set; }
+
+        // Navigation property (optional, not mapped by default)
+        // public virtual RepairTracker.Areas.Identity.Data.RepairTrackerUser? IdentityUser { get; set; }
+
         public virtual ICollection<RepairNote> RepairNotes { get; set; } = new List<RepairNote>();
 
         public virtual ICollection<Repair> Repairs { get; set; } = new List<Repair>();
