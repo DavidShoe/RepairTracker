@@ -125,6 +125,20 @@ internal class Program
 
         WebApplication app = builder.Build();
 
+        // Seed roles on startup
+        using (var scope = app.Services.CreateScope())
+        {
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            string[] roles = { "Admin", "Tech", "Owner" };
+            foreach (var role in roles)
+            {
+                if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())
+                {
+                    roleManager.CreateAsync(new IdentityRole(role)).GetAwaiter().GetResult();
+                }
+            }
+        }
+
         // Log the server and database information
         var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
         logger.LogInformation($"Connecting to server: {connectionBuilder.DataSource}, database: {connectionBuilder.InitialCatalog}");

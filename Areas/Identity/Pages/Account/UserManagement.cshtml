@@ -1,0 +1,50 @@
+@page
+@using Microsoft.AspNetCore.Identity
+@using RepairTracker.Areas.Identity.Data
+@inject UserManager<RepairTrackerUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@model UserManagementModel
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<h2>User Management</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>User Name</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    @{
+        foreach (var user in Model.Users)
+        {
+            var userRoles = UserManager.GetRolesAsync(user).GetAwaiter().GetResult();
+    <tr>
+        <td>@user.UserName</td>
+        <td>@user.Email</td>
+        <td>
+            <form method="post" asp-page-handler="UpdateRoles">
+                <input type="hidden" name="userId" value="@user.Id" />
+                @foreach (var role in Model.AllRoles)
+                {
+                    var isChecked = userRoles.Contains(role.Name);
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" name="selectedRoles" value="@role.Name" id="@user.Id-@role.Name" @(isChecked ? "checked" : null) />
+        <label class="form-check-label" for="@user.Id-@role.Name">@role.Name</label>
+    </div>
+                }
+                <button type="submit" class="btn btn-sm btn-primary ms-2">Update Roles</button>
+            </form>
+        </td>
+        <td>
+            <!-- Optionally, add more user actions here -->
+        </td>
+    </tr>
+        }
+    }
+    </tbody>
+</table>
