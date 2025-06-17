@@ -129,12 +129,23 @@ internal class Program
         using (var scope = app.Services.CreateScope())
         {
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            string[] roles = { "Admin", "Tech", "Owner" };
+            string[] roles = { "Admin", "Tech", "Owner", "Guest" };
             foreach (var role in roles)
             {
                 if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())
                 {
                     roleManager.CreateAsync(new IdentityRole(role)).GetAwaiter().GetResult();
+                }
+            }
+
+            // Assign Guest role to all users who have no roles
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<RepairTrackerUser>>();
+            foreach (var user in userManager.Users.ToList())
+            {
+                var userRoles = userManager.GetRolesAsync(user).GetAwaiter().GetResult();
+                if (userRoles == null || !userRoles.Any())
+                {
+                    userManager.AddToRoleAsync(user, "Guest").GetAwaiter().GetResult();
                 }
             }
         }
