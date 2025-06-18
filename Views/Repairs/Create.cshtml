@@ -1,7 +1,6 @@
 ﻿@model RepairTracker.DBModels.Repair
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize] // All authenticated users can access Repairs
-
+@attribute [Authorize(Roles = "Admin,Tech")] // Only Admins and Technicians can access
 @{
     ViewData["Title"] = "Create Repair";
 }

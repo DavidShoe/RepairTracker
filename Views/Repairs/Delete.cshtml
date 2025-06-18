@@ -1,5 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize] // All authenticated users can access Repairs
+@attribute [Authorize(Roles = "Admin,Tech")] // Only Admins and Technicians can access
 
 @model RepairTracker.DBModels.Repair
 
