@@ -71,6 +71,14 @@
                                     <button type="submit" class="btn btn-link nav-link text-dark">Logout</button>
                                 </form>
                             </li>
+                            <li class="nav-item">
+                                <form asp-area="Identity" asp-page="/Account/Manage/Index" method="post" class="form-inline">
+                                <button type="submit" class="btn btn-link nav-link text-dark" title="Settings">
+                                      &#9881;
+                                </button>
+                                </form>
+
+                            </li>
                         }
                         else
                         {

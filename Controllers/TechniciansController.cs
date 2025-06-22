@@ -6,16 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairTracker.DBModels;
+using Microsoft.AspNetCore.Identity;
+using RepairTracker.Areas.Identity.Data;
 
 namespace RepairTracker.Controllers
 {
     public class TechniciansController : Controller
     {
         private readonly GameRepairContext _context;
+        private readonly UserManager<RepairTrackerUser> _userManager;
 
-        public TechniciansController(GameRepairContext context)
+        public TechniciansController(GameRepairContext context, UserManager<RepairTrackerUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Technicians
@@ -45,6 +49,8 @@ namespace RepairTracker.Controllers
         // GET: Technicians/Create
         public IActionResult Create()
         {
+            var users = _userManager.Users.ToList();
+            ViewData["IdentityUserId"] = new SelectList(users, "Id", "Email");
             return View();
         }
 
@@ -53,14 +59,20 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("TechnicianId,TechnicianName,HourlyRate")] Technician technician)
+        public async Task<IActionResult> Create([Bind("TechnicianId,TechnicianName,HourlyRate,IdentityUserId")] Technician technician)
         {
+            if (string.IsNullOrEmpty(technician.IdentityUserId))
+            {
+                ModelState.AddModelError("IdentityUserId", "A user must be selected.");
+            }
             if (ModelState.IsValid)
             {
                 _context.Add(technician);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(TechIndex));
             }
+            var users = _userManager.Users.ToList();
+            ViewData["IdentityUserId"] = new SelectList(users, "Id", "Email", technician.IdentityUserId);
             return View(technician);
         }
 
@@ -77,6 +89,8 @@ namespace RepairTracker.Controllers
             {
                 return NotFound();
             }
+            var users = _userManager.Users.ToList();
+            ViewData["IdentityUserId"] = new SelectList(users, "Id", "Email", technician.IdentityUserId);
             return View(technician);
         }
 
@@ -85,13 +99,16 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("TechnicianId,TechnicianName,HourlyRate")] Technician technician)
+        public async Task<IActionResult> Edit(int id, [Bind("TechnicianId,TechnicianName,HourlyRate,IdentityUserId")] Technician technician)
         {
             if (id != technician.TechnicianId)
             {
                 return NotFound();
             }
-
+            if (string.IsNullOrEmpty(technician.IdentityUserId))
+            {
+                ModelState.AddModelError("IdentityUserId", "A user must be selected.");
+            }
             if (ModelState.IsValid)
             {
                 try
@@ -112,6 +129,8 @@ namespace RepairTracker.Controllers
                 }
                 return RedirectToAction(nameof(TechIndex));
             }
+            var users = _userManager.Users.ToList();
+            ViewData["IdentityUserId"] = new SelectList(users, "Id", "Email", technician.IdentityUserId);
             return View(technician);
         }
 

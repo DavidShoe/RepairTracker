@@ -2,10 +2,20 @@
 @using RepairTracker.Areas.Identity.Data
 @inject SignInManager<RepairTrackerUser> SignInManager
 @inject UserManager<RepairTrackerUser> UserManager
+@using RepairTracker.DBModels
+@inject RepairTracker.DBModels.GameRepairContext DbContext
+@using Microsoft.EntityFrameworkCore
 
 @{
     ViewData["Title"] = "Home Page";
     var sessionExpired = Context.Request.Query["sessionExpired"].ToString();
+    string? userId = null;
+    int? techId = null;
+    if (SignInManager.IsSignedIn(User))
+    {
+        userId = UserManager.GetUserId(User);
+        techId = DbContext.Technicians.FirstOrDefault(t => t.IdentityUserId == userId)?.TechnicianId;
+    }
 }
 
 <div class="text-center">
@@ -24,10 +34,6 @@
     @if (SignInManager.IsSignedIn(User))
     {
         <h2>Welcome, @UserManager.GetUserName(User)!</h2>
-        <a class="btn btn-secondary" asp-area="Identity" asp-page="/Account/Manage/Index">Manage Account</a>
-        <form asp-area="Identity" asp-page="/Account/Logout" method="post" style="display:inline;">
-            <button type="submit" class="btn btn-link">Logout</button>
-        </form>
     }
     else
     {
@@ -35,3 +41,64 @@
         <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login with your account</a>
     }
 </div>
+
+@if (User.IsInRole("Tech"))
+{
+
+    var activeRepairs = DbContext.Repairs
+        .Where(r => r.TechnicianId == techId && r.FinishedDate == null && r.StartDate != null)
+        .Include(r => r.Game)
+        .Include(r => r.Owner)
+        .ToList();
+    var backlogRepairs = DbContext.Repairs
+        .Where(r => r.TechnicianId == techId && r.StartDate == null)
+        .Include(r => r.Game)
+        .Include(r => r.Owner)
+        .ToList();
+
+    <div class="text-center">
+        <h2>Howdy Tech</h2>
+        <b>Your active work is:</b>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Owner</th>
+                    <th>Received Date</th>
+                    <th>Start Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var repair in activeRepairs)
+            {
+                <tr>
+                    <td>@repair.Game?.GameName</td>
+                    <td>@repair.Owner?.OwnerName</td>
+                    <td>@repair.ReceivedDate</td>
+                    <td>@repair.StartDate</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <b>Your backlog work is:</b>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Owner</th>
+                    <th>Received Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var repair in backlogRepairs)
+            {
+                <tr>
+                    <td>@repair.Game?.GameName</td>
+                    <td>@repair.Owner?.OwnerName</td>
+                    <td>@repair.ReceivedDate</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
