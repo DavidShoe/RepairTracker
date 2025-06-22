@@ -66,8 +66,8 @@ namespace RepairTracker.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [Required]
-            [EmailAddress]
-            public string Email { get; set; }
+            [DataType(DataType.Text)]
+            public string UserName { get; set; }
 
             /// <summary>
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -111,7 +111,7 @@ namespace RepairTracker.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 // Check if user exists and is confirmed
-                var user = await _signInManager.UserManager.FindByEmailAsync(Input.Email);
+                var user = await _signInManager.UserManager.FindByNameAsync(Input.UserName);
                 if (user != null && !_signInManager.UserManager.IsEmailConfirmedAsync(user).GetAwaiter().GetResult())
                 {
                     ModelState.AddModelError(string.Empty, "You must confirm your email before you can log in.");
@@ -120,7 +120,7 @@ namespace RepairTracker.Areas.Identity.Pages.Account
 
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(Input.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");

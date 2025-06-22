@@ -44,7 +44,6 @@
 
 @if (User.IsInRole("Tech"))
 {
-
     var activeRepairs = DbContext.Repairs
         .Where(r => r.TechnicianId == techId && r.FinishedDate == null && r.StartDate != null)
         .Include(r => r.Game)
@@ -102,3 +101,36 @@
         </table>
     </div>
 }
+
+@if (User.IsInRole("Admin"))
+{
+    // For Admin: get all users with Guest role
+    List<RepairTrackerUser> guestUsers = new List<RepairTrackerUser>();
+    guestUsers = UserManager.Users
+        .ToList()
+        .Where(u => UserManager.GetRolesAsync(u).Result.Contains("Guest"))
+        .ToList();
+
+    <div class="text-center">
+        <h2>Howdy Boss</h2>
+        <h3>These are the current guest users to validate</h3>
+        <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in guestUsers)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}
+</h3>
