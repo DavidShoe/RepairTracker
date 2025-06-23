@@ -48,6 +48,13 @@ namespace RepairTracker.DBModels
             modelBuilder.Entity<Owner>(entity =>
             {
                 entity.Property(e => e.OwnerId).HasColumnName("OwnerId");
+                // Add foreign key to Identity user
+                entity.Property(e => e.IdentityUserId).HasColumnName("IdentityUserId");
+                entity.HasOne<RepairTracker.Areas.Identity.Data.RepairTrackerUser>()
+                    .WithMany()
+                    .HasForeignKey(o => o.IdentityUserId)
+                    .HasPrincipalKey(u => u.Id)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Part>(entity =>
