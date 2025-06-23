@@ -38,6 +38,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Repairs" asp-action="RepairLogs">Repair Logs</a>
                         </li>
+                        @if (User.IsInRole("Guest"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClientRepairs" asp-action="ClientRepairsIndex">Client Repairs</a>
+                            </li>
+                        }
                         @if (User.IsInRole("Admin") || User.IsInRole("Tech"))
                         {
                             <li class="nav-item">

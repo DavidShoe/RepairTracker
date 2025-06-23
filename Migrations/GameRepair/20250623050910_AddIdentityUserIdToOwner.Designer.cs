@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RepairTracker.DBModels;
 
@@ -11,9 +12,11 @@ using RepairTracker.DBModels;
 namespace RepairTracker.Migrations.GameRepair
 {
     [DbContext(typeof(GameRepairContext))]
-    partial class GameRepairContextModelSnapshot : ModelSnapshot
+    [Migration("20250623050910_AddIdentityUserIdToOwner")]
+    partial class AddIdentityUserIdToOwner
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -123,6 +126,9 @@ namespace RepairTracker.Migrations.GameRepair
                     b.Property<string>("IdentityUserId")
                         .HasColumnType("nvarchar(450)")
                         .HasColumnName("IdentityUserId");
+
+                    b.Property<string>("IdentityUserId1")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("OwnerName")
                         .HasColumnType("nvarchar(max)");

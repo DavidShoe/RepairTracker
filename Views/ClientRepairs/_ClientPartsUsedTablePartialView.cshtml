@@ -1,0 +1,9 @@
+﻿@model IList<RepairTracker.DBModels.RepairPart>
+
+@if (Model is not null)
+{
+    for (int i = 0; i < Model.Count; i++)
+    {
+        @await Html.PartialAsync("_PartUsedLineItemPartialView", Model[i], new ViewDataDictionary(ViewData) { { "Index", i } })
+    }
+}

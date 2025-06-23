@@ -7,7 +7,8 @@
             Guest = 0,
             Tech,
             Owner,
-            Admin
+            Admin,
+            Client
         }
 
         public static string CurrentUser { get; set; } = string.Empty;

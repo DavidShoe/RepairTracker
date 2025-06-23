@@ -22,7 +22,7 @@ namespace RepairTracker.DBModels
 
         // Add foreign key to Identity user
         public string? IdentityUserId { get; set; }
-        public virtual RepairTrackerUser? IdentityUser { get; set; }
+        public virtual RepairTrackerUser IdentityUser { get; set; }
 
         public virtual ICollection<Repair> Repairs { get; set; } = new List<Repair>();
     }
