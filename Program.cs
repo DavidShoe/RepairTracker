@@ -129,7 +129,7 @@ internal class Program
         using (var scope = app.Services.CreateScope())
         {
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            string[] roles = { "Admin", "Tech", "Owner", "Guest" };
+            string[] roles = { "Admin", "Tech", "Owner", "Guest", "Client" };
             foreach (var role in roles)
             {
                 if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())

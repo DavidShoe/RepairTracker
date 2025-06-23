@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairTracker.DBModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RepairTracker.Controllers
 {
+    [Authorize(Roles = "Owner,Client")]
     public class OwnersController : Controller
     {
         private readonly GameRepairContext _context;
