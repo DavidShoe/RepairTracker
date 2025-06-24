@@ -1,0 +1,56 @@
+@model IEnumerable<RepairTracker.DBModels.Repair>
+@{
+    ViewData["Title"] = "Repair Logs";
+    var selectedGameId = Context.Request.Query["gameId"].ToString();
+}
+
+<h1>Repair Logs</h1>
+
+<form method="get" asp-action="RepairLogs">
+    <div class="form-group">
+        <label for="gameId">Filter by Game:</label>
+        <select id="gameId" name="gameId" class="form-control" onchange="this.form.submit()">
+            <option value="">All Games</option>
+            @foreach (var game in (SelectList)ViewBag.Games)
+            {
+                @: <option value="@game.Value"@(selectedGameId == game.Value ? " selected" : "")>@game.Text</option>
+            }
+        </select>
+    </div>
+</form>
+
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Game Name</th>
+            <th>Date of Repair</th>
+            <th>Parts Used</th>
+            <th>Notes</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var repair in Model)
+    {
+        <tr>
+            <td>@repair.Game?.GameName</td>
+            <td>@repair.FinishedDate</td>
+            <td>
+                <ul>
+                @foreach (var part in repair.RepairParts)
+                {
+                    <li>@part.Part?.PartName (Qty: @part.Quantity)</li>
+                }
+                </ul>
+            </td>
+            <td>
+                <ul>
+                @foreach (var note in repair.RepairNotes)
+                {
+                    <li>@note.Note (@note.NoteDate.ToShortDateString())</li>
+                }
+                </ul>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

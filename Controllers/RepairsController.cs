@@ -614,6 +614,23 @@ namespace RepairTracker.Controllers
             return View(nameof(WorkOnRepair), repair);
         }
 
+        public async Task<IActionResult> RepairLogs(int? gameId)
+        {
+            var repairsQuery = _context.Repairs
+                .Include(r => r.Game)
+                .Include(r => r.RepairParts).ThenInclude(rp => rp.Part)
+                .Include(r => r.RepairNotes)
+                .Where(r => r.FinishedDate != null);
 
+            if (gameId.HasValue)
+            {
+                repairsQuery = repairsQuery.Where(r => r.GameId == gameId.Value);
+            }
+
+            var games = await _context.Games.ToListAsync();
+            var repairs = await repairsQuery.ToListAsync();
+            ViewBag.Games = new SelectList(games, "GameId", "GameName");
+            return View("RepairLogs", repairs);
+        }
     }
 }

@@ -1,0 +1,91 @@
+﻿@model IList<RepairTracker.DBModels.Repair>
+@{
+    string mode = ViewData["mode"] as string ?? "";
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Game)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Owner)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].ReceivedDate)
+            </th>
+            @if (mode == "Active")
+            {
+                <th>
+                    @Html.DisplayNameFor(model => model[0].StartDate)
+                </th>
+            }
+            @if (mode == "History")
+            {
+                <th>
+                    @Html.DisplayNameFor(model => model[0].FinishedDate)
+                </th>
+            }
+            <th>
+                @Html.DisplayNameFor(model => model[0].Technician)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Game.GameName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Owner.OwnerName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ReceivedDate)
+                </td>
+                @if (mode == "Active")
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                }
+                @if (mode == "History")
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.FinishedDate)
+                    </td>
+                }
+                <td>
+                    @Html.DisplayFor(modelItem => item.Technician.TechnicianName)
+                </td>
+
+                @switch(mode)
+                {
+                    case "Active":
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.RepairId">Edit</a> |
+                            <a asp-action="WorkOnRepair" asp-route-id="@item.RepairId">Work on</a> |
+                            <a asp-action="Details" asp-route-id="@item.RepairId">Review</a>
+                        </td>
+                    break;
+
+                    case "Backlog":
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.RepairId">Edit</a> |
+                            <a asp-action="Start" asp-route-id="@item.RepairId">Start</a>
+                        </td>
+                    break;
+
+                    case "History":
+                        <td>
+                            <a asp-action="Details" asp-route-id="@item.RepairId">Review</a>
+                        </td>
+                        break;
+                }
+            </tr>
+        }
+    </tbody>
+</table>

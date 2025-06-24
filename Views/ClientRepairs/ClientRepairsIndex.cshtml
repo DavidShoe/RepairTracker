@@ -1,0 +1,28 @@
+@model RepairTracker.Controllers.ClientRepairsViewModel
+@using Microsoft.AspNetCore.Authorization
+@using RepairTracker.Controllers
+@attribute [Authorize(Roles = "Client, Owner")]
+
+@{
+    ViewData["Title"] = "My Repairs Index";
+}
+
+<h1>Repairs Index</h1>
+These are all the repairs you have in the system.
+
+To be able to submit an item for repair you must have fully updated your profile address information.
+<a href="/Account/Manage/Index">Update Profile</a>
+
+<p>
+    <a asp-action="Create">Submit for service</a>
+</p>
+
+<h2>Active repairs</h2>
+@await Html.PartialAsync("_RepairListPartialView", Model.ActiveRepairs, new ViewDataDictionary(ViewData) { { "Mode", "Active" } })
+
+<h2>Backlog</h2>
+@await Html.PartialAsync("_RepairListPartialView", Model.Backlog, new ViewDataDictionary(ViewData) { { "Mode", "Backlog" } })
+
+<h2>Completed repairs</h2>
+@await Html.PartialAsync("_RepairListPartialView", Model.History, new ViewDataDictionary(ViewData) { { "Mode", "History" } })
+

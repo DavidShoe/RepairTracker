@@ -1,8 +1,136 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@using RepairTracker.Areas.Identity.Data
+@inject SignInManager<RepairTrackerUser> SignInManager
+@inject UserManager<RepairTrackerUser> UserManager
+@using RepairTracker.DBModels
+@inject RepairTracker.DBModels.GameRepairContext DbContext
+@using Microsoft.EntityFrameworkCore
+
+@{
     ViewData["Title"] = "Home Page";
+    var sessionExpired = Context.Request.Query["sessionExpired"].ToString();
+    string? userId = null;
+    int? techId = null;
+    if (SignInManager.IsSignedIn(User))
+    {
+        userId = UserManager.GetUserId(User);
+        techId = DbContext.Technicians.FirstOrDefault(t => t.IdentityUserId == userId)?.TechnicianId;
+    }
 }
 
 <div class="text-center">
     <h1 class="display-4">Room Of Doom</h1>
-    <p>Repair backlog: ???</p>
+    <p class="lead">Welcome to the Room of Doom, where you can manage your repair backlog.</p>
 </div>
+
+@if (!string.IsNullOrEmpty(sessionExpired) && sessionExpired == "true")
+{
+    <div class="alert alert-warning" role="alert">
+        Your session has expired. Please log in again.
+    </div>
+}
+
+<div class="text-center">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <h2>Welcome, @UserManager.GetUserName(User)!</h2>
+    }
+    else
+    {
+        <h2>Login</h2>
+        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login with your account</a>
+    }
+</div>
+
+@if (User.IsInRole("Tech"))
+{
+    var activeRepairs = DbContext.Repairs
+        .Where(r => r.TechnicianId == techId && r.FinishedDate == null && r.StartDate != null)
+        .Include(r => r.Game)
+        .Include(r => r.Owner)
+        .ToList();
+    var backlogRepairs = DbContext.Repairs
+        .Where(r => r.TechnicianId == techId && r.StartDate == null)
+        .Include(r => r.Game)
+        .Include(r => r.Owner)
+        .ToList();
+
+    <div class="text-center">
+        <h2>Howdy Tech</h2>
+        <b>Your active work is:</b>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Owner</th>
+                    <th>Received Date</th>
+                    <th>Start Date</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var repair in activeRepairs)
+            {
+                <tr>
+                    <td>@repair.Game?.GameName</td>
+                    <td>@repair.Owner?.OwnerName</td>
+                    <td>@repair.ReceivedDate</td>
+                    <td>@repair.StartDate</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <b>Your backlog work is:</b>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Game</th>
+                    <th>Owner</th>
+                    <th>Received Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var repair in backlogRepairs)
+            {
+                <tr>
+                    <td>@repair.Game?.GameName</td>
+                    <td>@repair.Owner?.OwnerName</td>
+                    <td>@repair.ReceivedDate</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (User.IsInRole("Admin"))
+{
+    // For Admin: get all users with Guest role
+    List<RepairTrackerUser> guestUsers = new List<RepairTrackerUser>();
+    guestUsers = UserManager.Users
+        .ToList()
+        .Where(u => UserManager.GetRolesAsync(u).Result.Contains("Guest"))
+        .ToList();
+
+    <div class="text-center">
+        <h2>Howdy Boss</h2>
+        <h3>These are the current guest users to validate</h3>
+        <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in guestUsers)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+}
+</h3>

@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RepairTracker.DBModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace RepairTracker.Controllers
 {
+    [Authorize(Roles = "Owner,Client")]
     public class OwnersController : Controller
     {
         private readonly GameRepairContext _context;
@@ -85,7 +87,7 @@ namespace RepairTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("OwnerId,OwnerName,ContactInfo")] Owner owner)
+        public async Task<IActionResult> Edit(int id, [Bind("OwnerId,OwnerName,Password,UserName,Street,City,State,Zip,Email,Phone")] Owner owner)
         {
             if (id != owner.OwnerId)
             {

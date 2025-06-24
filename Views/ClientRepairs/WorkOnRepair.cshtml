@@ -1,0 +1,363 @@
+﻿@model RepairTracker.DBModels.Repair
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using System.ComponentModel.DataAnnotations
+@using RepairTracker.DBModels
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize] // All authenticated users can access Repairs
+
+@{
+    ViewData["Title"] = "Work On Repair";
+    bool isReview = ViewData["IsReview"] as bool? ?? false;
+}
+
+
+<div>
+<h1>Work On Repair: @Model.RepairId</h1>
+    @await Html.PartialAsync("_RepairHeaderPartialView", Model)
+
+    <hr />
+
+    <form method="post">
+    <div>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        @Html.Hidden($"Repair.RepairId", Model.RepairId)
+        @Html.Hidden($"Repair.GameId", Model.GameId)
+        @Html.Hidden($"Repair.TechnicianId", Model.TechnicianId)
+        @Html.Hidden($"Repair.OwnerId", Model.OwnerId)
+        @Html.Hidden($"Repair.ReceivedDate", Model.ReceivedDate)
+        @Html.Hidden($"Repair.StartDate", Model.StartDate)
+        @Html.Hidden($"Repair.CustomerStates", Model.CustomerStates)
+
+        <div>
+            <div>
+                <h3>Work performed</h3>
+                <input type="button" value="Add Note" class="btn btn-primary" onclick="addNote();" />
+            </div>
+
+            <table class="table items-table" id="Notes">
+                <thead>
+                    <tr class="row">
+                        <th class="col-md-1">
+                            Delete
+                        </th>
+                        <th class="col-md-2">
+                            Work Date
+                        </th>
+                        <th class="col-md-8">
+                            Work Description
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @await Html.PartialAsync("_NotesTablePartialView", Model.RepairNotes, new ViewDataDictionary(ViewData) { { "isReview", isReview } })
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <h3>Parts used</h3>
+            <table class="table items-table" id="partsUsed">
+                <thead>
+                    <tr>
+                        <th>Delete</th>
+                        <th>
+                            Part
+                        </th>
+                        <th>
+                            Sale $
+                        </th>
+                        <th>
+                            Quantity
+                        </th>
+                        <th>
+                            Line Total$
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                        @await Html.PartialAsync("_PartsUsedTablePartialView", Model.RepairParts, new ViewDataDictionary(ViewData) { { "isReview", isReview } })
+                </tbody>
+            </table>
+
+            <!-- Item Lookup Input in the middle -->
+            <input type="text" id="partLookupInput" class="form-control" placeholder="Enter Part" autocomplete="off" style="height: 50;">
+
+            <!-- Lookup Results ListBox -->
+            <select id="partLookupResults" class="form-control" size="3" style="overflow-y: auto;">
+                <!-- Lookup results will be populated here -->
+            </select>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="flex-container">
+        <button id="SaveButton" class="flex-column" type="submit" formaction="@Url.Action("SaveWork", "Repairs", new { repairId = Model.RepairId })">Save & Close</button>
+        <button id="processCartButton" class="flex-column" type="submit" formaction="@Url.Action("FinishRepair", "Repairs", new { repairId = Model.RepairId })" onclick="return confirmFinish();">Finish Repair</button>
+    </div>
+
+    </form>
+
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function () {
+
+            $("#partLookupResults").click(function () {
+                console.log("Part Lookup results click event fired");
+                event.preventDefault(); // we want to refresh in place as the model hasn't changed.
+                var selectedPartId = $(this).val(); // Assuming this is the item ID
+                if (selectedPartId) {
+                    addPartLineItem(selectedPartId);
+                }
+            });
+
+            // Use debounce to limit requests
+            $("#partLookupInput").on('input', debounce(lookupPart, 500)); // Adjust debounce time as needed
+
+            // change handler for part lines
+            $(document).ready(function () {
+                $("#partsUsed tbody").on("input", ".qty, .sale", function () {
+                    var element = $(this).closest('tr');
+                    var data = element.data();
+                    console.log(data);
+                    var repairPartId = data.repairpartid;
+
+                    var index = $(this).closest('tr').index();
+                    const qty = parseFloat(document.getElementById('qty_' + index).value) || 0;
+                    const salePrice = parseFloat(document.getElementById('sale_' + index).value) || 0;
+                    const lineTotal = qty * salePrice;
+
+                    $.ajax({
+                        url: '@Url.Action("EditPartLine", "Repairs")',
+                        type: 'POST',
+                        data: {
+                            repairPartId: repairPartId,
+                            sale: salePrice,
+                            quantity: qty
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                console.log('Note updated successfully');
+                                document.getElementById('lineTotal_' + index).innerText = response.total.toFixed(2);
+                            } else {
+                                console.log('Error updating note: ' + response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('AJAX error: ' + error);
+                        }
+                    });
+                });
+            });
+
+            // change handler for note lines
+            $(document).ready(function () {
+                $('.note-content').on('change', function () {
+                    var noteId = $(this).data('note-id');
+                    var noteContent = $(this).val();
+
+                    $.ajax({
+                        url: '@Url.Action("EditNoteLine", "Repairs")',
+                        type: 'POST',
+                        data: {
+                            noteId: noteId,
+                            noteContent: noteContent
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                console.log('Note updated successfully');
+                            } else {
+                                console.log('Error updating note: ' + response.message);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('AJAX error: ' + error);
+                        }
+                    });
+                });
+            });
+
+
+
+
+        });
+
+        function addPartLineItem(selectedPartId) {
+            console.log("Add line item call:" + selectedPartId);
+            $.ajax({
+                url: '@Url.Action("AddPartLineItem", "Repairs")',
+                type: 'POST',
+                data: {
+                    repairId: @Model.RepairId,
+                    partId: selectedPartId,
+                    quantity: 1
+                },
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    console.log("Add line item call success:" + selectedPartId);
+                    // Assuming the response is the HTML of the new line item table
+                    var li = $("#partsUsed tbody");
+                    li.html(response);
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error("Error adding line item: " + error);
+                }
+            });
+        }
+
+        // Function to handle item lookup
+        function lookupPart() {
+            console.log("Lookup item call");
+            var query = $("#partLookupInput").val();
+            if (query.length >= 2) { // Only search if query length is 2 or more characters
+
+                // Clear existing options
+                $("#partLookupResults").empty();
+                $("#partLookupResults").append($('<option>', {
+                    text: "No items found"
+                }));
+
+                $.ajax({
+                    url: '@Url.Action("LookupPart", "Repairs")',
+                    type: 'GET',
+                    data: { query: query },
+                    success: function (result) {
+                        if (result.success && result.items.length > 0) {
+                            // Clear existing options
+                            $("#partLookupResults").empty();
+
+                            // Populate the listbox with the lookup results
+                            result.items.forEach(function (item) {
+                                $("#partLookupResults").append($('<option>',
+                                    {
+                                        value: item.partId,
+                                        text: item.partName + ' - ' + item.cost + ' - ' + item.sale + ' - ' + item.supplier,
+                                    }
+                                ));
+                            });
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle error
+                        console.error("Error looking up item: " + error);
+                    }
+                });
+            }
+        }
+
+        // Debounce function to limit how often a function is called
+        function debounce(func, wait, immediate) {
+            var timeout;
+            return function () {
+                var context = this, args = arguments;
+                var later = function () {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
+        }
+
+        function deletePartLineItem(element, lineItemId) {
+            console.log("Delete part line item call:" + lineItemId);
+            $.ajax({
+                url: '@Url.Action("DeletePartLineItem", "Repairs")',
+                type: 'POST',
+                data: {
+                    repairId: @Model.RepairId,
+                    repairPartId: lineItemId
+                },
+                success: function (response) {
+                    console.log("delete line item call success:" + lineItemId);
+                    if (response.success) {
+                        // Remove the row from the table
+                        $(element).closest('tr').remove();
+                        //updateTotals(); // Recalculate totals after deletion
+                    } else {
+                        console.log("delete line item call failed:" + lineItemId);
+                        alert("Failed to delete line item: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error calling deletelineitem:" + lineItemId);
+                    alert("Error deleting line item: " + error);
+                }
+            });
+        }
+
+        function addNote() {
+            console.log("Add note call");
+            $.ajax({
+                url: '@Url.Action("AddNoteLine", "Repairs")',
+                type: 'POST',
+                data: {
+                    repairId: @Model.RepairId
+                },
+                headers: {
+                    "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function (response) {
+                    console.log("Add note call success");
+                    // Assuming the response is the HTML of the new line item table
+                    var li = $("#Notes tbody");
+                    li.html(response);
+                },
+                error: function (xhr, status, error) {
+                    // Handle error
+                    console.error("Error adding note: " + error);
+                }
+            });
+        }
+
+
+        function deleteNoteLine(element, lineItemId) {
+            console.log("Delete note line call:" + lineItemId);
+            $.ajax({
+                url: '@Url.Action("DeleteNoteLine", "Repairs")',
+                type: 'POST',
+                data: {
+                    repairId: @Model.RepairId,
+                    noteId: lineItemId
+                },
+                success: function (response) {
+                    console.log("delete note line call returned:" + lineItemId);
+                    if (response.success) {
+                        // Remove the row from the table
+                        $(element).closest('tr').remove();
+                    } else {
+                        console.log("delete note line call failed:" + lineItemId);
+                        alert("Failed to delete note line: " + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Error calling DeleteNoteLine:" + lineItemId);
+                    alert("Error deleting note line: " + error);
+                }
+            });
+        }
+
+        function confirmFinish() {
+            console.log("confirmFinish");
+            return confirm('Finish this repair?');
+        }
+
+    </script>
+}
+

@@ -7,10 +7,11 @@ using RepairTracker.DBModels;
 using System.Collections;
 using System.Configuration;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using RepairTracker.Areas.Identity.Data;
 
 internal class Program
 {
-
     private static void DumpAllEnvVariables(ILogger<Program> logger, IDictionary envVariables)
     {
         foreach (var envVar in envVariables.Cast<DictionaryEntry>())
@@ -40,8 +41,6 @@ internal class Program
         });
         var logger = loggerFactory.CreateLogger<Program>();
         var connectionString = "";
-
-        WebApplication? app = null;
 
         // Check if the environment is Production
         if (builder.Environment.IsProduction())
@@ -83,7 +82,8 @@ internal class Program
         else
         {
             logger.LogDebug("I am in development");
-            connectionString = builder.Configuration["RepairTracker:ConnectionStrings:AzureConnection"];
+            connectionString = builder.Configuration["RepairTracker:ConnectionStrings:DevAzureConnection"];
+            //connectionString = builder.Configuration["RepairTracker:ConnectionStrings:ProdAzureConnection"];
 
             if (string.IsNullOrEmpty(connectionString))
             {
@@ -94,14 +94,60 @@ internal class Program
         builder.Services.AddDbContext<GameRepairContext>(options =>
             options.UseSqlServer(connectionString));
 
+        // Add Identity DbContext
+        builder.Services.AddDbContext<RepairTrackerIdentityContext>(options =>
+            options.UseSqlServer(connectionString));
+
+        // Add Identity services
+        builder.Services.AddDefaultIdentity<RepairTrackerUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddRoles<IdentityRole>()
+            .AddEntityFrameworkStores<RepairTrackerIdentityContext>();
+
         // Add services to the container.
         builder.Services.AddControllersWithViews(
             options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true
-        );
+            );
 
-        if (app is null)
+        builder.Services.AddRazorPages();
+
+        // Add session support
+        builder.Services.AddDistributedMemoryCache();
+        builder.Services.AddSession(options => {
+//            options.IdleTimeout = TimeSpan.FromSeconds(10);
+            options.IdleTimeout = TimeSpan.FromMinutes(30);
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+            }
+        );
+        
+        // Register IHttpContextAccessor
+        builder.Services.AddHttpContextAccessor();
+
+        WebApplication app = builder.Build();
+
+        // Seed roles on startup
+        using (var scope = app.Services.CreateScope())
         {
-            app = builder.Build();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            string[] roles = { "Admin", "Tech", "Owner", "Guest", "Client" };
+            foreach (var role in roles)
+            {
+                if (!roleManager.RoleExistsAsync(role).GetAwaiter().GetResult())
+                {
+                    roleManager.CreateAsync(new IdentityRole(role)).GetAwaiter().GetResult();
+                }
+            }
+
+            // Assign Guest role to all users who have no roles
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<RepairTrackerUser>>();
+            foreach (var user in userManager.Users.ToList())
+            {
+                var userRoles = userManager.GetRolesAsync(user).GetAwaiter().GetResult();
+                if (userRoles == null || !userRoles.Any())
+                {
+                    userManager.AddToRoleAsync(user, "Guest").GetAwaiter().GetResult();
+                }
+            }
         }
 
         // Log the server and database information
@@ -112,6 +158,11 @@ internal class Program
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
+            if (services == null)
+            {
+                logger.LogError("Service provider is null. Cannot create GameRepairContext.");
+                throw new InvalidOperationException("Service provider is null. Cannot create GameRepairContext.");
+            }
 
             using (var context = new GameRepairContext(
                     services.GetRequiredService<DbContextOptions<GameRepairContext>>()))
@@ -125,11 +176,13 @@ internal class Program
                 else
                 {
                     Debug.WriteLine("Not finding data");
-                    logger.LogDebug("Not finding data");
+                    logger.LogDebug("Not finding data, seeding database");
+                    SeedDb(services); // Call the seed function here
+                    Debug.WriteLine("Done seeding databse");
+                    logger.LogDebug("Done seeding database");
                 }
             }
         }
-
 
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
@@ -144,12 +197,93 @@ internal class Program
 
         app.UseRouting();
 
+        app.UseAuthentication();
         app.UseAuthorization();
+        app.UseSession();
+        app.UseMiddleware<SessionCheckMiddleware>(); // Use custom session check middleware
 
         app.MapControllerRoute(
             name: "default",
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
+        app.MapRazorPages();
+
         app.Run();
+    }
+
+    private static void SeedDb(IServiceProvider services)
+    {
+        var context = services.GetRequiredService<GameRepairContext>();
+        var identityContext = services.GetRequiredService<RepairTrackerIdentityContext>();
+        var userManager = services.GetRequiredService<UserManager<RepairTrackerUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        if (context == null)
+        {
+            throw new InvalidOperationException("GameRepairContext is null. Cannot seed database.");
+        }
+        if (identityContext == null)
+        {
+            throw new InvalidOperationException("RepairTrackerIdentityContext is null. Cannot seed database.");
+        }
+        if (userManager == null)
+        {
+            throw new InvalidOperationException("UserManager<RepairTrackerUser> is null. Cannot seed database.");
+        }
+        if (roleManager == null)
+        {
+            throw new InvalidOperationException("RoleManager<IdentityRole> is null. Cannot seed database.");
+        }
+
+        // Add the default administrator user if it doesn't exist
+
+        string adminEmail = "David_Shoemaker@hotmail.com";
+        RepairTrackerUser adminUser = userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult();
+        if (adminUser != null)
+        {
+            Console.WriteLine("Admin user already exists: " + adminUser.UserName);
+            return; // Exit if the admin user already exists
+        }
+        else
+        {
+
+            string adminUserName = "DavidShoe";
+            var adminUserAdded = userManager.CreateAsync(new RepairTrackerUser
+            {
+                UserName = adminUserName,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                SecurityStamp = Guid.NewGuid().ToString()
+            }).GetAwaiter().GetResult();
+            if (adminUserAdded.Succeeded)
+            {
+                // Assign the Admin role to the user
+                adminUser = userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult();
+                if (adminUser != null && !userManager.IsInRoleAsync(adminUser, "Admin").GetAwaiter().GetResult())
+                {
+                    userManager.AddToRoleAsync(adminUser, "Admin").GetAwaiter().GetResult();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Failed to create admin user: " + string.Join(", ", adminUserAdded.Errors.Select(e => e.Description)));
+            }
+        }
+
+        //// Example: Log all Technicians and their linked IdentityUserId
+        //foreach (var tech in context.Technicians.ToList())
+        //{
+        //    var user = userManager.FindByIdAsync(tech.IdentityUserId).GetAwaiter().GetResult();
+        //    if (user != null)
+        //    {
+        //        Console.WriteLine($"Technician: {tech.TechnicianName}, IdentityUserId: {tech.IdentityUserId}, UserName: {user.UserName}");
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine($"Technician: {tech.TechnicianName}, IdentityUserId: {tech.IdentityUserId} (NO USER FOUND)");
+        //    }
+        //}
+
+        // Add more seed/consistency logic as needed
     }
 }

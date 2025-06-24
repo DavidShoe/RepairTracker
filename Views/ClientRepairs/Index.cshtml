@@ -1,0 +1,24 @@
+﻿@model RepairTracker.Controllers.ClientRepairsViewModel
+@using Microsoft.AspNetCore.Authorization
+@using RepairTracker.Controllers
+@attribute [Authorize(Roles = "Client")]
+
+@{
+    ViewData["Title"] = "Client Repairs Index";
+}
+
+<h1>Client Repairs Index</h1>
+
+<p>
+    <a asp-action="Create">Submit new item for repair</a>
+</p>
+
+<h2>Active repairs</h2>
+@await Html.PartialAsync("_ClientRepairListPartialView", Model.ActiveRepairs, new ViewDataDictionary(ViewData) { { "Mode", "Active" } })
+
+<h2>Backlog</h2>
+@await Html.PartialAsync("_ClientRepairListPartialView", Model.Backlog, new ViewDataDictionary(ViewData) { { "Mode", "Backlog" } })
+
+<h2>Completed repairs</h2>
+@await Html.PartialAsync("_ClientRepairListPartialView", Model.History, new ViewDataDictionary(ViewData) { { "Mode", "History" } })
+
