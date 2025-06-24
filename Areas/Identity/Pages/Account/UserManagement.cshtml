@@ -31,6 +31,10 @@
                 <input type="hidden" name="userId" value="@user.Id" />
                 @foreach (var role in Model.AllRoles)
                 {
+                    if (role is null)
+                    {
+                        continue; // Skip null roles
+                    }
                     var isChecked = userRoles.Contains(role.Name);
     <div class="form-check form-check-inline">
         <input class="form-check-input" type="checkbox" name="selectedRoles" value="@role.Name" id="@user.Id-@role.Name" @(isChecked ? "checked" : null) />

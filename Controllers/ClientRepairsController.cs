@@ -20,7 +20,7 @@ namespace RepairTracker.Controllers
         public List<Repair>? Backlog { get; set; }
         public List<Repair>? History { get; set; }
 
-        public List<Owner> Addresses { get; private set; }
+        public List<Owner> Addresses { get; set; }
         // TODO: Change owners to be addresses and Selecting from available addresses for shipping / billing
         //public Owner ShippingAddress { get; private set; }
     }
@@ -67,9 +67,11 @@ namespace RepairTracker.Controllers
             var activeRepairs = repairs.Where(r => (r.FinishedDate == null && r.StartDate != null)).ToList();
             var backlog = repairs.Where(r => r.StartDate == null).ToList();
             var history = repairs.Where(r => r.FinishedDate != null).ToList();
-            // get the list of owners which match the current logged in userid
 
-            var addresses = repairs.Where(r => string.Compare(r.Owner.IdentityUser, userId, StringComparison.CurrentCultureIgnoreCase)).ToList();
+            // get the list of owners which match the current logged in userid
+            var addresses = _context.Owners
+                .Where(r => string.Compare(r.IdentityUser.Id, userId, StringComparison.CurrentCultureIgnoreCase) == 0)
+                .ToList();
 
             repairsViewModel.ActiveRepairs = activeRepairs;
             repairsViewModel.Backlog = backlog;

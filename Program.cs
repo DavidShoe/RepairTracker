@@ -158,6 +158,11 @@ internal class Program
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
+            if (services == null)
+            {
+                logger.LogError("Service provider is null. Cannot create GameRepairContext.");
+                throw new InvalidOperationException("Service provider is null. Cannot create GameRepairContext.");
+            }
 
             using (var context = new GameRepairContext(
                     services.GetRequiredService<DbContextOptions<GameRepairContext>>()))
@@ -171,7 +176,10 @@ internal class Program
                 else
                 {
                     Debug.WriteLine("Not finding data");
-                    logger.LogDebug("Not finding data");
+                    logger.LogDebug("Not finding data, seeding database");
+                    SeedDb(services); // Call the seed function here
+                    Debug.WriteLine("Done seeding databse");
+                    logger.LogDebug("Done seeding database");
                 }
             }
         }
@@ -201,5 +209,81 @@ internal class Program
         app.MapRazorPages();
 
         app.Run();
+    }
+
+    private static void SeedDb(IServiceProvider services)
+    {
+        var context = services.GetRequiredService<GameRepairContext>();
+        var identityContext = services.GetRequiredService<RepairTrackerIdentityContext>();
+        var userManager = services.GetRequiredService<UserManager<RepairTrackerUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+        if (context == null)
+        {
+            throw new InvalidOperationException("GameRepairContext is null. Cannot seed database.");
+        }
+        if (identityContext == null)
+        {
+            throw new InvalidOperationException("RepairTrackerIdentityContext is null. Cannot seed database.");
+        }
+        if (userManager == null)
+        {
+            throw new InvalidOperationException("UserManager<RepairTrackerUser> is null. Cannot seed database.");
+        }
+        if (roleManager == null)
+        {
+            throw new InvalidOperationException("RoleManager<IdentityRole> is null. Cannot seed database.");
+        }
+
+        // Add the default administrator user if it doesn't exist
+
+        string adminEmail = "David_Shoemaker@hotmail.com";
+        RepairTrackerUser adminUser = userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult();
+        if (adminUser != null)
+        {
+            Console.WriteLine("Admin user already exists: " + adminUser.UserName);
+            return; // Exit if the admin user already exists
+        }
+        else
+        {
+
+            string adminUserName = "DavidShoe";
+            var adminUserAdded = userManager.CreateAsync(new RepairTrackerUser
+            {
+                UserName = adminUserName,
+                Email = adminEmail,
+                EmailConfirmed = true,
+                SecurityStamp = Guid.NewGuid().ToString()
+            }).GetAwaiter().GetResult();
+            if (adminUserAdded.Succeeded)
+            {
+                // Assign the Admin role to the user
+                adminUser = userManager.FindByEmailAsync(adminEmail).GetAwaiter().GetResult();
+                if (adminUser != null && !userManager.IsInRoleAsync(adminUser, "Admin").GetAwaiter().GetResult())
+                {
+                    userManager.AddToRoleAsync(adminUser, "Admin").GetAwaiter().GetResult();
+                }
+            }
+            else
+            {
+                Console.WriteLine("Failed to create admin user: " + string.Join(", ", adminUserAdded.Errors.Select(e => e.Description)));
+            }
+        }
+
+        //// Example: Log all Technicians and their linked IdentityUserId
+        //foreach (var tech in context.Technicians.ToList())
+        //{
+        //    var user = userManager.FindByIdAsync(tech.IdentityUserId).GetAwaiter().GetResult();
+        //    if (user != null)
+        //    {
+        //        Console.WriteLine($"Technician: {tech.TechnicianName}, IdentityUserId: {tech.IdentityUserId}, UserName: {user.UserName}");
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine($"Technician: {tech.TechnicianName}, IdentityUserId: {tech.IdentityUserId} (NO USER FOUND)");
+        //    }
+        //}
+
+        // Add more seed/consistency logic as needed
     }
 }
